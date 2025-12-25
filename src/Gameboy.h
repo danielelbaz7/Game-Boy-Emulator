@@ -42,6 +42,12 @@ class Gameboy {
     //stores the current 16kb window we are storing in the bank and are able to look at
     uint8_t currentRomWindow = 1;
 
+    // rom/ram select mode
+    const uint8_t ROM_MODE = 0;
+    const uint8_t RAM_MODE = 1;
+
+    uint8_t bankModeToUse{ROM_MODE};
+
 public:
     uint8_t read(uint16_t address);
     void write(uint16_t address, uint8_t byteToWrite);

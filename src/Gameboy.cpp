@@ -1,5 +1,5 @@
 #include <vector>
-#include "Gameboy.h"
+#include "./Gameboy.h"
 
 uint8_t Gameboy::read(uint16_t address) {
     if (address <= 0x3FFF) {
@@ -72,6 +72,47 @@ void Gameboy::write(uint16_t address, uint8_t byteToWrite) {
         } else {
             eRamEnabled = false;
         }
+        return;
     }
+    // handles rom bank switching & validation
+    if (address <= 0x3FFF) {
+        uint8_t lower5Bits = (byteToWrite & 0x1F);
+        if (lower5Bits == 0x00) {
+            lower5Bits = 0x01;
+        }
+        currentRomWindow = (currentRomWindow & ~0x1Fu) | lower5Bits;
+        return;
+    }
+    
+    if (address <= 0x5FFF) {
+        if(bankModeToUse == ROM_MODE) {
+            //set bits 5 and 6 to the two bits in the register, then shift left so its bits 5 and 6
+            uint8_t romBankToUse = ((byteToWrite & 0x03) << 5u);
+            currentRomWindow = (currentRomWindow & ~0x60u) | romBankToUse;
+        } else {
+            //set the ram window to the 2 bits in this register
+            uint8_t ramBankToUse = (byteToWrite & 0x03);
+            currentERamWindow = (currentERamWindow & ~0x03u) | ramBankToUse;
+        }
+        return;
+    }
+
+    //decide whether we are using rom or ram mode
+    if (address <= 0x7FFF) {
+        uint8_t lower4Bits = (byteToWrite & 0x0F);
+        //ram mode is 1, rom mode is 0
+        lower4Bits == RAM_MODE ? bankModeToUse = RAM_MODE : bankModeToUse = ROM_MODE;
+        return;
+    }
+    
+    if (address <= 0xBFFF) {
+        //if the cartridge has no ram, the external ram is just disabled by default and should never modified
+        if(eRamEnabled) {
+            eRam[(currentERamWindow * 0x2000) + (address - 0xA000)] = byteToWrite;
+        }
+        return;
+    }
+
+    
 
 }
