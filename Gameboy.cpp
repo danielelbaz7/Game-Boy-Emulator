@@ -19,7 +19,7 @@ uint8_t Gameboy::read(uint16_t address) {
 
     if (address <= 0xBFFF) {
         //return the value in external ram only if eRam is enabled
-        return eRamEnabled ? eRam[address - 0xA000] : 0xFF;
+        return eRamEnabled ? eRam[(currentERamWindow * 0x2000) + (address - 0xA000)] : 0xFF;
     }
 
     if (address <= 0xDFFF) {
@@ -57,5 +57,21 @@ uint8_t Gameboy::read(uint16_t address) {
     }
 
     return 0xFF;
+
+}
+
+
+void Gameboy::write(uint16_t address, uint8_t byteToWrite) {
+    //handles eram disable/enable
+    if (address <= 0x1FFF) {
+        //takes only the lower 4 bits of the byte we are writing
+        uint8_t lower4Bits = (byteToWrite & 0x0F);
+        //if the lower 4 bits are A, enable eRam. else, disable it
+        if (lower4Bits == 0x0A) {
+            eRamEnabled = true;
+        } else {
+            eRamEnabled = false;
+        }
+    }
 
 }

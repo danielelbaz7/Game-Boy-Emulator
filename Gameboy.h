@@ -23,12 +23,16 @@ class Gameboy {
     //--CARTRIDGE--
 
     // External RAM, can be a lot more than 8KB but we can only see (8KB) at a time, used for save files (.sav)
+
     std::vector<uint8_t> eRam;
 
     //this controls whether eram is enabled for reading and writing. this was physically stored, not a memory
     //address in the original gameboy. if you try to write to the first 8192 addresses in memory, we detect that
     //as enabling/disabling eram depending on the value
     bool eRamEnabled = false;
+
+    //used for external RAM banking
+    uint8_t currentERamWindow = 0;
 
     // Memory banks for ROM (16KB each)
     //0000-3FFF
@@ -40,5 +44,5 @@ class Gameboy {
 
 public:
     uint8_t read(uint16_t address);
-    void write(uint16_t address);
+    void write(uint16_t address, uint8_t byteToWrite);
 };
