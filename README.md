@@ -1,1 +1,1 @@
-A GameBoy emulator built by Daniel Elbaz and Jackson Johanesson.
+A GameBoy emulator built by Daniel Elbaz and Jackson Johannesson.
