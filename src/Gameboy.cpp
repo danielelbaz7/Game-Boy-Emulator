@@ -416,7 +416,7 @@ uint8_t Gameboy::OP_0x17() {
 //Jump s8 steps from the current address in the program counter (PC). (Jump relative.)
 uint8_t Gameboy::OP_0x18() {
     pc++;
-    int8_t jumpSteps = static_cast<int8_t>(read(pc));
+    auto jumpSteps = read(pc);
     pc += jumpSteps;
     // adjust for the automatic pc increment after opcode function
     pc--;
@@ -436,6 +436,21 @@ uint8_t Gameboy::OP_0x19() {
 //Load the 8-bit contents of memory specified by register pair DE into register A.
 uint8_t Gameboy::OP_0x1A() {
     af.a = read(de.reg16);
+    return 2;
+}
+
+// ROW x2
+// If the Z flag is 0, jump s8 steps from the current address stored in the pc
+uint8_t Gameboy::OP_0x20() {
+    pc++;
+    int8_t jumpSteps = static_cast<int8_t>(read(pc));
+    // if z flag is 0
+    if (!readFlag('Z')) {
+        pc += jumpSteps;
+        pc --; // adjust for automatic pc increment after opcode function
+        return 3;
+    }
+    // otherwise do nothing
     return 2;
 }
 
