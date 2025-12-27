@@ -1,4 +1,4 @@
-#include <vector>
+#inswlude <vector>
 #include <fstream>
 #include <iostream>
 #include "./Gameboy.h"
@@ -151,16 +151,21 @@ void Gameboy::write(uint16_t address, uint8_t byteToWrite) {
 }
 
 //flag setting
+// added breaks and '&=' instead of just '&'
 void Gameboy::setFlag(char flagName, bool flagValue) {
     switch (flagName) {
         case 'Z':
-            flagValue ? af.f |= (FLAG_Z) : af.f & ~FLAG_Z;
+            flagValue ? af.f |= (FLAG_Z) : af.f &= ~FLAG_Z;
+            break;
         case 'N':
-            flagValue ? af.f |= (FLAG_N) : af.f & ~FLAG_N;
+            flagValue ? af.f |= (FLAG_N) : af.f &= ~FLAG_N;
+            break;
         case 'H':
-            flagValue ? af.f |= (FLAG_H) : af.f & ~FLAG_H;
+            flagValue ? af.f |= (FLAG_H) : af.f &= ~FLAG_H;
+            break;
         case 'C':
-            flagValue ? af.f |= (FLAG_C) : af.f & ~FLAG_C;
+            flagValue ? af.f |= (FLAG_C) : af.f &= ~FLAG_C;
+            break;
         default: break;
     }
 }
@@ -339,6 +344,11 @@ uint8_t Gameboy::OP_0x0F() {
     return 1;
 }
 
+uint8_t Gameboy::OP_0x10() {
+    //stop command, we will not implement halting the cpu for now
+    return 1;
+}
+
 //load the next two bytes into de
 uint8_t Gameboy::OP_0x11() {
     uint8_t lowByte = read(++pc);
@@ -403,7 +413,31 @@ uint8_t Gameboy::OP_0x17() {
     return 1;
 }
 
+//Jump s8 steps from the current address in the program counter (PC). (Jump relative.)
+uint8_t Gameboy::OP_0x18() {
+    pc++;
+    int8_t jumpSteps = static_cast<int8_t>(read(pc));
+    pc += jumpSteps;
+    // adjust for the automatic pc increment after opcode function
+    pc--;
+    return 3;
+}
 
+// Add the contents of register pair DE to the contents of register pair HL, and store the results in register pair HL.
+uint8_t Gameboy::OP_0x19() {
+    uint16_t oldHl = hl.reg16;
+    hl.reg16 += de.reg16;
+    setFlag('N', false);
+    setFlag('H', ((oldHl & 0x0FFF) + (de.reg16 & 0x0FFF)) > 0x0FFF);
+    setFlag('C', (static_cast<uint32_t>(oldHl) + static_cast<uint32_t>(de.reg16)) > 0xFFFF);
+    return 2;
+}
+
+//Load the 8-bit contents of memory specified by register pair DE into register A.
+uint8_t Gameboy::OP_0x1A() {
+    af.a = read(de.reg16);
+    return 2;
+}
 
 
 

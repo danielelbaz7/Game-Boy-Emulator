@@ -140,4 +140,16 @@ private:
     uint8_t OP_0x0E();
 
     uint8_t OP_0x0F();
+    uint8_t OP_0x10();
+    uint8_t OP_0x11();
+    uint8_t OP_0x12();
+    uint8_t OP_0x13();
+    uint8_t OP_0x14();
+    uint8_t OP_0x15();
+    uint8_t OP_0x16();
+    uint8_t OP_0x17();
+    uint8_t OP_0x18();
+    uint8_t OP_0x19();
+    uint8_t OP_0x1A();
+    
 };
