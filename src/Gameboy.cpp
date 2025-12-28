@@ -506,6 +506,8 @@ uint8_t Gameboy::OP_0x1F() {
     return 1;
 }
 
+// ROW x2
+
 //if z flag is 0,jump (immediate s8) steps from the current address. otherwise, go to the end of the instruction
 uint8_t Gameboy::OP_0x20() {
     if (!readFlag('Z')) {
@@ -621,13 +623,65 @@ uint8_t Gameboy::OP_0x29() {
 
 // Load the contents of memory specified by register pair HL into register A, and simultaneously increment the contents of HL.
 uint8_t Gameboy::OP_0x2A() {
-    
+    af.a = read(hl.reg16);
+    hl.reg16++;
+    return 2;
 }
 
-//Load the contents of memory specified by register pair HL into register A, and simultaneously increment the contents of HL.
-uint8_t Gameboy::OP_0x2A() {
-
+// Decrement the contents of register pair HL by 1.
+uint8_t Gameboy::OP_0x2B() {
+    hl.reg16--;
+    return 2;
 }
+
+//Increment the contents of register L by 1.
+uint8_t Gameboy::OP_0x2C() {
+    oldL = hl.l;
+    hl.l++;
+    setFlag('Z', hl.l==0);
+    setFlag('N', false);
+    setFlag('H', ((oldL & 0x0F) + (1 & 0x0F)) > 0x0F);
+    return 1;
+}
+
+//Decrement the contents of register L by 1.
+uint8_t Gameboy::OP_0x2D() {
+    oldL = hl.l;
+    hl.l--;
+    setFlag('Z', hl.l==0);
+    setFlag('N', true);
+    setFlag('H', (oldL & 0x0F) == 0x00);
+    return 1;
+}
+
+// Load the 8-bit immediate operand d8 into register L.
+uint8_t Gameboy::OP_0x2E() {
+    pc++;
+    hl.l = read(pc);
+    return 2;
+}
+
+// Rotate the contents of register A to the right, through the carry (CY) flag.
+// The contents of bit 7 are copied to bit 6, and the previous contents of bit 6 (before the copy) are copied to bit 5. 
+// The same operation is repeated in sequence for the rest of the register. The previous contents of the carry flag are copied to bit 7.
+uint8_t Gameboy::OP_0x2F() {
+    //gets old 0 bit
+    uint8_t oldBit7 = (af.a >> 7u) & 0x01;
+    //shift left
+    af.a = af.a << 1u;
+    //set bit 0 to carry flag
+    if (readFlag('C')) {
+        af.a |= 0x01;
+    }
+
+    setFlag('Z', false);
+    setFlag('N', false);
+    setFlag('H', false);
+    setFlag('C', oldBit7 == 0x01);
+
+    return 1;
+}
+
 
 // ROW x3
 //if c flag is 0,jump (immediate s8) steps from the current address. otherwise, go to the end of the instruction
@@ -769,5 +823,365 @@ uint8_t Gameboy::OP_0x3F() {
     return 1;
 }
 
+// ROW x4
+
+//Load the contents of register B into register B.
+uint8_t Gameboy::OP_0x40() {
+    bc.b = bc.b;
+    return 1;
+}
+
+// Load the contents of register C into register B
+uint8_t Gameboy::OP_0x41() {
+    bc.b = bc.c;
+    return 1;
+}
+
+// Load the contents of register D into register B.
+uint8_t Gameboy::OP_0x42() {
+    bc.b = de.d;
+    return 1;
+}
+
+// Load the contents of register E into register B.
+uint8_t Gameboy::OP_0x43() {
+    bc.b = de.e;
+    return 1;
+}
+
+// Load the contents of register H into register B.
+uint8_t Gameboy::OP_0x44() {
+    bc.b = hl.h;
+    return 1;
+}
+
+// Load the contents of register L into register B.
+uint8_t Gameboy::OP_0x45() {
+    bc.b = hl.l;
+    return 1;    
+}
+
+//Load the 8-bit contents of memory specified by register pair HL into register B.
+uint8_t Gameboy::OP_0x46() {
+    bc.b = read(hl.reg16);
+    return 2;
+}
+
+//Load the contents of register A into register B.
+uint8_t Gameboy::OP_0x47() {
+    bc.b = af.a;
+    return 1;
+}
+
+//Load the contents of register B into register C.
+uint8_t Gameboy::OP_0x48() {
+    bc.c = bc.b;
+}
+
+//Load the contents of register C into register C.
+uint8_t Gameboy::OP_0x49() {
+    bc.c = bc.c;
+    return 1;
+}
+
+// Load the contents of register D into register C.
+uint8_t Gameboy::OP_0x4A() {
+    bc.c = de.d;
+    return 1;
+}
+
+//Load the contents of register E into register C
+uint8_t Gameboy::OP_0x4B() {
+    bc.c = de.e;
+    return 1;
+}
+
+// Load the contents of register H into register C.
+uint8_t Gameboy::OP_0x4C() {
+    bc.c = hl.h;
+    return 1;
+}
+
+//Load the contents of register L into register C.
+uint8_t Gameboy::OP_0x4D() {
+    bc.c = hl.h;
+    return 1;
+}
+
+// Load the 8-bit contents of memory specified by register pair HL into register C.
+uint8_t Gameboy::OP_0x4E() {
+    bc.c = read(hl.reg16);
+    return 2;
+}
+
+//Load the contents of register A into register C.
+uint8_t Gameboy::OP_0x4F() {
+    bc.c = af.a;
+    return 1;
+}
 
 
+// ROW x5
+//row 5 is super simple, just load into D (from 0-7) then load into E (from 8-F)
+uint8_t Gameboy::OP_0x50() {
+    de.d = bc.b;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x51() {
+    de.d = bc.c;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x52() {
+    de.d = de.d;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x53() {
+    de.d = de.e;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x54() {
+    de.d = hl.h;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x55() {
+    de.d = hl.l;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x56() {
+    de.d = read(hl.reg16);
+    return 2;
+}
+
+uint8_t Gameboy::OP_0x57() {
+    de.d = af.a;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x58() {
+    de.e = bc.b;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x59() {
+    de.e = bc.c;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x5A() {
+    de.e = de.d;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x5B() {
+    de.e = de.e;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x5C() {
+    de.e = hl.h;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x5D() {
+    de.e = hl.l;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x5E() {
+    de.e = read(hl.reg16);
+    return 2;
+}
+
+uint8_t Gameboy::OP_0x5F() {
+    de.e = af.a;
+    return 1;
+}
+
+
+// ROW x6
+//row 6 is also super simple loading into H and then into L
+uint8_t Gameboy::OP_0x60() {
+    hl.h = bc.b;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x61() {
+    hl.h = bc.c;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x62() {
+    hl.h = de.d;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x63() {
+    hl.h = de.e;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x64() {
+    hl.h = hl.h;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x65() {
+    hl.h = hl.l;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x66() {
+    hl.h = read(hl.reg16);
+    return 2;
+}
+
+uint8_t Gameboy::OP_0x67() {
+    hl.h = af.a;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x68() {
+    hl.h = bc.b;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x69() {
+    hl.l = bc.c;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x6A() {
+    hl.l = de.d;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x6B() {
+    hl.l = de.e;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x6C() {
+    hl.l = hl.h;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x6D() {
+    hl.l = hl.l;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x6E() {
+    hl.l = read(hl.reg16);
+    return 2;
+}
+
+uint8_t Gameboy::OP_0x6F() {
+    hl.l = af.a;
+    return 1;
+}
+
+
+
+// ROW 7
+
+//Store the contents of register B in the memory location specified by register pair HL.
+uint8_t Gameboy::OP_0x70() {
+    write(hl.reg16, bc.b);
+    return 2;
+}
+
+//Store the contents of register C in the memory location specified by register pair HL.
+uint8_t Gameboy::OP_0x71() {
+    write(hl.reg16, bc.c);
+    return 2;
+}
+
+//Store the contents of register D in the memory location specified by register pair HL.
+uint8_t Gameboy::OP_0x72() {
+    write(hl.reg16, de.d);
+    return 2;
+}
+
+// Store the contents of register E in the memory location specified by register pair HL.
+uint8_t Gameboy::OP_0x73() {
+    write(hl.reg16, de.e);
+    return 2;
+}
+// Store the contents of register H in the memory location specified by register pair HL.
+uint8_t Gameboy::OP_0x74() {
+    write(hl.reg16, hl.h);
+    return 2;
+}
+
+// Store the contents of register L in the memory location specified by register pair HL.
+uint8_t Gameboy::OP_0x75() {
+    write(hl.reg16, hl.l);
+    return 2;
+}
+
+// HALT INSTRUCTION
+uint8_t Gameboy::OP_0x76() {
+    // implement later
+    return 1;
+}
+
+// Store the contents of register A in the memory location specified by register pair HL.
+uint8_t Gameboy::OP_0x77() {
+    write(hl.reg16, af.a);
+    return 2;
+}
+
+// Load the contents of register B into register A.
+uint8_t Gameboy::OP_0x78() {
+    af.a = bc.b
+    return 1;
+}
+
+//Load the contents of register C into register A
+uint8_t Gameboy::OP_0x79() {
+    af.a = bc.c
+    return 1;
+}
+
+
+// Load the contents of register D into register A.
+uint8_t Gameboy::OP_0x7A() {
+    af.a = de.d;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x7B() {
+    af.a = de.e;
+    return 1;
+}
+
+// Load the contents of register H into register A.
+uint8_t Gameboy::OP_0x7C() {
+    af.a = hl.h;
+    return 1;
+}
+
+uint8_t Gameboy::OP_0x7D() {
+    af.a = hl.l;
+    return 1;
+}
+
+// Load the 8-bit contents of memory specified by register pair HL into register A.
+uint8_t Gameboy::OP_0x7E() {
+    af.a = read(hl.reg16);
+    return 2;
+}
+
+// Load the contents of register A into register A.
+uint8_t Gameboy::OP_0x7F() {
+    af.a = af.a
+    return 1;
+}
+
+// ROW x8
