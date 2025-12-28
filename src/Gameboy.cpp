@@ -442,21 +442,6 @@ uint8_t Gameboy::OP_0x1A() {
     return 2;
 }
 
-// ROW x2
-// If the Z flag is 0, jump s8 steps from the current address stored in the pc
-uint8_t Gameboy::OP_0x20() {
-    pc++;
-    int8_t jumpSteps = static_cast<int8_t>(read(pc));
-    // if z flag is 0
-    if (!readFlag('Z')) {
-        pc += jumpSteps;
-        pc --; // adjust for automatic pc increment after opcode function
-        return 3;
-    }
-    // otherwise do nothing
-    return 2;
-}
-
 //decrement de by 1
 uint8_t Gameboy::OP_0x1B() {
     de.reg16--;
@@ -636,7 +621,7 @@ uint8_t Gameboy::OP_0x2B() {
 
 //Increment the contents of register L by 1.
 uint8_t Gameboy::OP_0x2C() {
-    oldL = hl.l;
+    uint8_t oldL = hl.l;
     hl.l++;
     setFlag('Z', hl.l==0);
     setFlag('N', false);
@@ -646,7 +631,7 @@ uint8_t Gameboy::OP_0x2C() {
 
 //Decrement the contents of register L by 1.
 uint8_t Gameboy::OP_0x2D() {
-    oldL = hl.l;
+    uint8_t oldL = hl.l;
     hl.l--;
     setFlag('Z', hl.l==0);
     setFlag('N', true);
@@ -774,7 +759,7 @@ uint8_t Gameboy::OP_0x39() {
     hl.reg16 += sp;
     setFlag('N', false);
     setFlag('H', ((oldHl & 0x0FFF) + (sp & 0x0FFF)) > 0x0FFF);
-    setFlag('C', (static_cast<uint32_t>(oldHl) + static_cast<uint32_t>(sp.reg16)) > 0xFFFF);
+    setFlag('C', (static_cast<uint32_t>(oldHl) + static_cast<uint32_t>(sp)) > 0xFFFF);
     return 2;
 }
 
@@ -1139,13 +1124,13 @@ uint8_t Gameboy::OP_0x77() {
 
 // Load the contents of register B into register A.
 uint8_t Gameboy::OP_0x78() {
-    af.a = bc.b
+    af.a = bc.b;
     return 1;
 }
 
 //Load the contents of register C into register A
 uint8_t Gameboy::OP_0x79() {
-    af.a = bc.c
+    af.a = bc.c;
     return 1;
 }
 
@@ -1180,7 +1165,7 @@ uint8_t Gameboy::OP_0x7E() {
 
 // Load the contents of register A into register A.
 uint8_t Gameboy::OP_0x7F() {
-    af.a = af.a
+    af.a = af.a;
     return 1;
 }
 
