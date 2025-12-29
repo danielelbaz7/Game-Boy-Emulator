@@ -1485,7 +1485,7 @@ uint8_t Gameboy::OP_0x96() {
     return 1;
 }
 
-//subtract a from a
+//subtract a from a, trivial but kept same logic
 uint8_t Gameboy::OP_0x97() {
     uint8_t old = af.a;
     af.a -= af.a;
