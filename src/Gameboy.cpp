@@ -1174,7 +1174,7 @@ uint8_t Gameboy::OP_0x7F() {
 // ROW x8
 // Add the contents of register B to the contents of register A, and store the results in register A.
 uint8_t Gameboy::OP_0x80() {
-    oldA = af.a;
+    uint8_t oldA = af.a;
     af.a = af.a + bc.b;
 
     setFlag('Z', af.a == 0);
@@ -1187,7 +1187,7 @@ uint8_t Gameboy::OP_0x80() {
 
 // Add the contents of register C to the contents of register A, and store the results in register A.
 uint8_t Gameboy::OP_0x81() {
-    oldA = af.a;
+    uint8_t oldA = af.a;
     af.a = af.a + bc.c;
 
     setFlag('Z', af.a == 0);
@@ -1200,7 +1200,7 @@ uint8_t Gameboy::OP_0x81() {
 
 //Add the contents of register D to the contents of register A, and store the results in register A.
 uint8_t Gameboy::OP_0x82() {
-    oldA = af.a;
+    uint8_t oldA = af.a;
     af.a = af.a + de.d;
 
     setFlag('Z', af.a == 0);
@@ -1213,7 +1213,7 @@ uint8_t Gameboy::OP_0x82() {
 
 // Add the contents of register E to the contents of register A, and store the results in register A.
 uint8_t Gameboy::OP_0x83() {
-    oldA = af.a;
+    uint8_t oldA = af.a;
     af.a = af.a + de.e;
 
     setFlag('Z', af.a == 0);
@@ -1226,7 +1226,7 @@ uint8_t Gameboy::OP_0x83() {
 
 // Add the contents of register H to the contents of register A, and store the results in register A.
 uint8_t Gameboy::OP_0x84() {
-    oldA = af.a;
+    uint8_t oldA = af.a;
     af.a = af.a + hl.h;
 
     setFlag('Z', af.a == 0);
@@ -1239,7 +1239,7 @@ uint8_t Gameboy::OP_0x84() {
 
 // Add the contents of register L to the contents of register A, and store the results in register A.
 uint8_t Gameboy::OP_0x85() {
-    oldA = af.a;
+    uint8_t oldA = af.a;
     af.a = af.a + hl.l;
 
     setFlag('Z', af.a == 0);
@@ -1253,7 +1253,7 @@ uint8_t Gameboy::OP_0x85() {
 // Add the contents of memory specified by register pair HL to the contents of register A, and store the results in register A.
 uint8_t Gameboy::OP_0x86() {
     uint8_t val = read(hl.reg16);
-    oldA = af.a;
+    uint8_t oldA = af.a;
     af.a = af.a + val;
 
     setFlag('Z', af.a == 0);
@@ -1266,7 +1266,7 @@ uint8_t Gameboy::OP_0x86() {
 
 // Add the contents of register A to the contents of register A, and store the results in register A.
 uint8_t Gameboy::OP_0x87() {
-    oldA = af.a;
+    uint8_t oldA = af.a;
     uint8_t val = af.a;
     af.a = af.a + val;
 
@@ -1499,7 +1499,7 @@ uint8_t Gameboy::OP_0xA0() {
     setFlag('Z', af.a ==0);
     setFlag('N', false);
     setFlag('H', true);
-    setFlag('C', false)
+    setFlag('C', false);
     return 1;
 }
 
@@ -1511,7 +1511,7 @@ uint8_t Gameboy::OP_0xA1() {
     setFlag('Z', af.a ==0);
     setFlag('N', false);
     setFlag('H', true);
-    setFlag('C', false)
+    setFlag('C', false);
     return 1;
 }
 
@@ -1524,7 +1524,7 @@ uint8_t Gameboy::OP_0xA2() {
     setFlag('Z', af.a ==0);
     setFlag('N', false);
     setFlag('H', true);
-    setFlag('C', false)
+    setFlag('C', false);
     return 1;
 }
 
@@ -1536,7 +1536,7 @@ uint8_t Gameboy::OP_0xA3() {
     setFlag('Z', af.a ==0);
     setFlag('N', false);
     setFlag('H', true);
-    setFlag('C', false)
+    setFlag('C', false);
     return 1;
 }
 
@@ -1548,7 +1548,7 @@ uint8_t Gameboy::OP_0xA4() {
     setFlag('Z', af.a ==0);
     setFlag('N', false);
     setFlag('H', true);
-    setFlag('C', false)
+    setFlag('C', false);
     return 1;
 }
 
@@ -1560,7 +1560,7 @@ uint8_t Gameboy::OP_0xA5() {
     setFlag('Z', af.a ==0);
     setFlag('N', false);
     setFlag('H', true);
-    setFlag('C', false)
+    setFlag('C', false);
     return 1;
 }
 
@@ -1572,7 +1572,7 @@ uint8_t Gameboy::OP_0xA6() {
     setFlag('Z', af.a ==0);
     setFlag('N', false);
     setFlag('H', true);
-    setFlag('C', false)
+    setFlag('C', false);
     return 2;
 }
 
@@ -1584,7 +1584,7 @@ uint8_t Gameboy::OP_0xA7() {
     setFlag('Z', af.a ==0);
     setFlag('N', false);
     setFlag('H', true);
-    setFlag('C', false)
+    setFlag('C', false);
     return 1;
 }
 
