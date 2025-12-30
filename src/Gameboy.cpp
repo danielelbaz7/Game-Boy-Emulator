@@ -1670,3 +1670,24 @@ uint8_t Gameboy::OP_0xBE() {
 uint8_t Gameboy::OP_0xBF() {
     return OpcodeHelpers::OR(af.a, af.a, *this);
 }
+
+//ROW xC
+//loads the contents of memory at the address in sp into the lower byte of pc, then increments and
+//does the same for the higher byte
+uint8_t Gameboy::OP_0xC0() {
+    if (!readFlag('Z')) {
+        uint8_t lowerByte = read(sp++);
+        pc = lowerByte;
+        uint8_t higherByte = read(sp++);
+        pc |= (higherByte << 8u);
+        return 5;
+    }
+    return 2;
+}
+
+//pop the contents of memory at sp into bc
+uint8_t Gameboy::OP_0xC1() {
+    bc.c = read(sp++);
+    bc.b = read(sp++);
+    return 5;
+}
