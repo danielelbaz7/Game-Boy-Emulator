@@ -321,12 +321,19 @@ private:
     uint8_t OP_0xBF();
 
     uint8_t OP_0xC0();
-
     uint8_t OP_0xC1();
-
     uint8_t OP_0xC2();
-
     uint8_t OP_0xC3();
-
     uint8_t OP_0xC4();
+    uint8_t OP_0xC5();
+    uint8_t OP_0xC6();
+    uint8_t OP_0xC7();
+    uint8_t OP_0xC8();
+    uint8_t OP_0xC9();
+    uint8_t OP_0xCA();
+    uint8_t OP_0xCB();
+    uint8_t OP_0xCC();
+    uint8_t OP_0xCD();
+    uint8_t OP_0xCE();
+    uint8_t OP_0xCF();
 };
