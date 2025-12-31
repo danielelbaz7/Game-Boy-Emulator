@@ -1586,7 +1586,6 @@ uint8_t Gameboy::OP_0xA7() {
     setFlag('H', true);
     setFlag('C', false);
     return 1;
-
 }
 
 // Take the logical exclusive-OR for each bit of the contents of register B and the contents of register A, and store the results in register A.
@@ -2177,6 +2176,18 @@ uint8_t Gameboy::OP_0xE5() {
     return 4;
 }
 
+//bitwise AND on register A and the 8 bit immediate, stored in register A
+uint8_t Gameboy::OP_0xE6() {
+    uint8_t result = af.a & read(++pc);
+    af.a = result;
+
+    setFlag('Z', af.a == 0);
+    setFlag('N', false);
+    setFlag('H', true);
+    setFlag('C', false);
+    return 2;
+}
+
 //RST 4
 uint8_t Gameboy::OP_0xE7() {
     pc++;
@@ -2191,10 +2202,48 @@ uint8_t Gameboy::OP_0xE7() {
     return 4;
 }
 
+//add the contents of the signed 8 bit immediate to the stack pointer
+//half carry determined by bit 3 -> 4,
+//carry determined by bit 7 -> 8
+uint8_t Gameboy::OP_0xE8() {
+    uint16_t oldSP = sp;
+    auto immediate = static_cast<int8_t>(read(++pc));
+    sp = oldSP + immediate;
+
+    setFlag('Z', false);
+    setFlag('N', false);
+    setFlag('H', ((oldSP & 0x000F) + (immediate & 0x000F)) > 0x000F);
+    setFlag('C', ((oldSP & 0x00FF) + (immediate & 0x00FF)) > 0x00FF);
+
+    return 4;
+}
+
 //load HL into stack pointer
 uint8_t Gameboy::OP_0xE9() {
-    pc = hl.reg16
+    pc = hl.reg16;
     return 1;
+}
+
+//store the contents of register A in memory at the address stored in the immediate
+uint8_t Gameboy::OP_0xEA() {
+    uint16_t address = read(++pc);
+    address |= (read(++pc) << 8u);
+
+    write(address, af.a);
+    return 4;
+}
+
+//xor with the 8 bit immediate
+uint8_t Gameboy::OP_0xEE() {
+    uint8_t immediate = read(++pc);
+    af.a = af.a ^ immediate;
+
+    setFlag('Z', af.a == 0);
+    setFlag('N', false);
+    setFlag('H', false);
+    setFlag('C', false);
+
+    return 2;
 }
 
 //RST 5
