@@ -2075,8 +2075,10 @@ uint8_t Gameboy::OP_0xD8() {
     return 2;
 }
 
-//returns after an interrupt. load the stack pointer into program counter
+//returns after an interrupt. load the stack pointer into program counter, set IME to 1
 uint8_t Gameboy::OP_0xD9() {
+    IME = true;
+
     uint8_t lowerByte = read(sp++);
     pc = lowerByte;
     uint8_t higherByte = read(sp++);
@@ -2152,7 +2154,7 @@ uint8_t Gameboy::OP_0xE0() {
     return 3;
 }
 
-//pop the contents of memory at sp into bc
+//pop the contents of memory at sp into hl
 uint8_t Gameboy::OP_0xE1() {
     hl.l = read(sp++);
     hl.h = read(sp++);
@@ -2259,4 +2261,121 @@ uint8_t Gameboy::OP_0xEF() {
     pc--;
     return 4;
 }
+
+//ROW xF
+//loads the contents of mem at the address specified by the immediate into register A, the immediate
+//specifies the least significant byte of the memory, and FF is always the most significant byte
+uint8_t Gameboy::OP_0xF0() {
+    uint16_t newAddress = 0xFF00;
+    newAddress |= read(++pc);
+
+    af.a = read(newAddress);
+    return 3;
+}
+
+//pop the contents of memory at sp into af
+uint8_t Gameboy::OP_0xF1() {
+    af.f = read(sp++);
+    af.a = read(sp++);
+    return 3;
+}
+
+//load memory at address in register C (0xFF(c value)) where c stores last 8 bits into register a
+uint8_t Gameboy::OP_0xF2() {
+    uint16_t newAddress = 0xFF00;
+    newAddress |= read(bc.c);
+
+    af.a = read(newAddress);
+    return 3;
+}
+
+//disables interrupts
+uint8_t Gameboy::OP_0xF3() {
+    IME = false;
+    return 1;
+}
+
+//push AF onto the stack
+uint8_t Gameboy::OP_0xF5() {
+    //high byte first
+    write(--sp, af.a);
+    write(--sp, af.f);
+    return 4;
+}
+
+//logical OR with the immediate operand and A, stored in A
+uint8_t Gameboy::OP_0xF6() {
+    return OpcodeHelpers::OR(af.a, read(++pc), *this) + 1;
+}
+
+//RST 6
+uint8_t Gameboy::OP_0xF7() {
+    pc++;
+    //write to memory the return address which is just the pc incremented
+    //first the high byte, then the low
+
+    write(--sp, static_cast<uint8_t>(pc & 0xFF00) >> 8u);
+    write(--sp, static_cast<uint8_t>(pc & 0x00FF));
+
+    pc = 0x0030;
+    pc--;
+    return 4;
+}
+
+//add the signed immediate to the stack pointer, store in HL
+uint8_t Gameboy::OP_0xF8() {
+    uint16_t oldSP = sp;
+    auto immediate = static_cast<int8_t>(read(++pc));
+    hl.reg16 = oldSP + immediate;
+
+
+    setFlag('Z', false);
+    setFlag('N', false);
+    setFlag('H', ((oldSP & 0x000F) + (immediate & 0x000F)) > 0x000F);
+    setFlag('C', ((oldSP & 0x00FF) + (immediate & 0x00FF)) > 0x00FF);
+
+    return 3;
+}
+
+//load HL into SP
+uint8_t Gameboy::OP_0xF9() {
+    sp = hl.reg16;
+    return 2;
+}
+
+//load ram at address in 16 bit immediate into register A
+uint8_t Gameboy::OP_0xFA() {
+    uint16_t address = read(++pc);
+    address |= (read(++pc) << 8u);
+
+    af.a = read(address);
+    return 4;
+}
+
+//enable interrupts
+uint8_t Gameboy::OP_0xFB() {
+    IME = true;
+    return 1;
+}
+
+//compare register A with immediate. doesn't affect register A
+uint8_t Gameboy::OP_0xFE() {
+    return OpcodeHelpers::CP(af.a, read(++pc), *this) + 1;
+}
+
+//RST 6
+uint8_t Gameboy::OP_0xFF() {
+    pc++;
+    //write to memory the return address which is just the pc incremented
+    //first the high byte, then the low
+
+    write(--sp, static_cast<uint8_t>(pc & 0xFF00) >> 8u);
+    write(--sp, static_cast<uint8_t>(pc & 0x00FF));
+
+    pc = 0x0038;
+    pc--;
+    return 4;
+}
+
+
 

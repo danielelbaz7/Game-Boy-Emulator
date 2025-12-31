@@ -37,7 +37,7 @@ uint8_t OpcodeHelpers::OR(uint8_t &a, uint8_t toOrWith, Gameboy &gb) {
     return 1;
 }
 
-uint8_t OpcodeHelpers::CP(uint8_t &a, uint8_t toSubtract, Gameboy& gb) {
+uint8_t OpcodeHelpers::CP(uint8_t a, uint8_t toSubtract, Gameboy& gb) {
     uint8_t computedValue = a - toSubtract;
     gb.setFlag('Z', computedValue == 0);
     gb.setFlag('N', true);

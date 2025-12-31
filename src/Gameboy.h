@@ -41,7 +41,6 @@ public:
     uint8_t read(uint16_t address);
     void write(uint16_t address, uint8_t byteToWrite);
     void setFlag(unsigned char flagName, bool flagValue);
-
     bool readFlag(unsigned char flagName) const;
 
 private:
@@ -62,6 +61,9 @@ private:
     const uint8_t FLAG_N = 0x40; // 0100 0000
     const uint8_t FLAG_H = 0x20; // 0010 0000
     const uint8_t FLAG_C = 0x10; // 0001 0000
+
+    //ime used to disable or enable all interrupts, IME=1/true is enabled, IME=0/false is disabled
+    bool IME{}; //interrupt master enable flag
 
 
     // All addresses/memory available to the Gameboy, 16-bit addresses
@@ -110,8 +112,6 @@ private:
 
     uint8_t bankModeToUse{ROM_MODE};
 
-
-    uint8_t registers [0x08]{};
 
     void LoadRom(char const* filename);
 
@@ -339,7 +339,6 @@ private:
     uint8_t OP_0xD0();
     uint8_t OP_0xD1();
     uint8_t OP_0xD2();
-    uint8_t OP_0xD3();
     uint8_t OP_0xD4();
     uint8_t OP_0xD5();
     uint8_t OP_0xD6();
@@ -348,7 +347,32 @@ private:
     uint8_t OP_0xD9();
     uint8_t OP_0xDA();
     uint8_t OP_0xDC();
-    uint8_t OP_0xDD();
     uint8_t OP_0xDE();
     uint8_t OP_0xDF();
+
+    uint8_t OP_0xE0();
+    uint8_t OP_0xE1();
+    uint8_t OP_0xE2();
+    uint8_t OP_0xE5();
+    uint8_t OP_0xE6();
+    uint8_t OP_0xE7();
+    uint8_t OP_0xE8();
+    uint8_t OP_0xE9();
+    uint8_t OP_0xEA();
+    uint8_t OP_0xEE();
+    uint8_t OP_0xEF();
+
+    uint8_t OP_0xF0();
+    uint8_t OP_0xF1();
+    uint8_t OP_0xF2();
+    uint8_t OP_0xF3();
+    uint8_t OP_0xF5();
+    uint8_t OP_0xF6();
+    uint8_t OP_0xF7();
+    uint8_t OP_0xF8();
+    uint8_t OP_0xF9();
+    uint8_t OP_0xFA();
+    uint8_t OP_0xFB();
+    uint8_t OP_0xFE();
+    uint8_t OP_0xFF();
 };
