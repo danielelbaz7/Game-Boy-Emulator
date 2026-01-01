@@ -40,13 +40,17 @@ class Gameboy {
 public:
     Gameboy();
 
+    void LoadRom(char const* filename);
+
     uint8_t read(uint16_t address);
     void write(uint16_t address, uint8_t byteToWrite);
     void setFlag(unsigned char flagName, bool flagValue);
     bool readFlag(unsigned char flagName) const;
 
-    void run();
-    void cycle();
+    bool stopped = false;
+
+    void Run();
+    uint8_t Step();
 
 
 private:
@@ -118,9 +122,8 @@ private:
 
     uint8_t bankModeToUse{ROM_MODE};
 
-    void LoadRom(char const* filename);
+    void BuildOpcodeTable();
 
-    bool stopped = false;
     bool halted = false;
 
     //opcode functions

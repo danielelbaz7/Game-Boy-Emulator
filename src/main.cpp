@@ -2,11 +2,13 @@
 
 #include "Gameboy.h"
 
-int main() {
-    std::cout << "Hello, World!" << std::endl;
-    Gameboy g;
-    uint16_t value = 8;
-    uint16_t returnAddress = value++;
-    std::cout << returnAddress;
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        std::cerr << "You have the wrong number of arguments!";
+        return 1;
+    }
+    Gameboy gb{};
+    gb.LoadRom(argv[1]);
+    std::cout << gb.read(0x0001);
     return 0;
 }
