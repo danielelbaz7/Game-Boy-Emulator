@@ -72,6 +72,7 @@ uint8_t Gameboy::read(uint16_t address) {
 }
 
 void Gameboy::write(uint16_t address, uint8_t byteToWrite) {
+    std::cout << address << std::endl;
     //handles eram disable/enable
     if (address <= 0x1FFF) {
         //takes only the lower 4 bits of the byte we are writing
@@ -2124,7 +2125,7 @@ uint8_t Gameboy::OP_0xC4() {
         //write to memory the return address which is just the program counter incremented
         //first the high byte, then the low
 
-        write(--sp, static_cast<uint8_t>(returnAddress & 0xFF00) >> 8u);
+        write(--sp, static_cast<uint8_t>((returnAddress & 0xFF00) >> 8u));
         write(--sp, static_cast<uint8_t>(returnAddress & 0x00FF));
 
         pc = newAddress;
@@ -2164,7 +2165,7 @@ uint8_t Gameboy::OP_0xC7() {
     //write to memory the return address which is just the pc incremented
     //first the high byte, then the low
 
-    write(--sp, static_cast<uint8_t>(pc & 0xFF00) >> 8u);
+    write(--sp, static_cast<uint8_t>((pc & 0xFF00) >> 8u));
     write(--sp, static_cast<uint8_t>(pc & 0x00FF));
 
     pc = 0x0000;
@@ -2218,7 +2219,7 @@ uint8_t Gameboy::OP_0xCC() {
         //write to memory the return address which is just the program counter incremented
         //first the high byte, then the low
 
-        write(--sp, static_cast<uint8_t>(returnAddress & 0xFF00) >> 8u);
+        write(--sp, static_cast<uint8_t>((returnAddress & 0xFF00) >> 8u));
         write(--sp, static_cast<uint8_t>(returnAddress & 0x00FF));
 
         pc = newAddress;
@@ -2240,7 +2241,7 @@ uint8_t Gameboy::OP_0xCD() {
     //write to memory the return address which is just the program counter incremented
     //first the high byte, then the low
 
-    write(--sp, static_cast<uint8_t>(returnAddress & 0xFF00) >> 8u);
+    write(--sp, static_cast<uint8_t>((returnAddress & 0xFF00) >> 8u));
     write(--sp, static_cast<uint8_t>(returnAddress & 0x00FF));
 
     pc = newAddress;
@@ -2271,7 +2272,7 @@ uint8_t Gameboy::OP_0xCF() {
     //write to memory the return address which is just the pc incremented
     //first the high byte, then the low
 
-    write(--sp, static_cast<uint8_t>(pc & 0xFF00) >> 8u);
+    write(--sp, static_cast<uint8_t>((pc & 0xFF00) >> 8u));
     write(--sp, static_cast<uint8_t>(pc & 0x00FF));
 
     pc = 0x0008;
@@ -2327,7 +2328,7 @@ uint8_t Gameboy::OP_0xD4() {
         //write to memory the return address which is just the program counter incremented
         //first the high byte, then the low
 
-        write(--sp, static_cast<uint8_t>(returnAddress & 0xFF00) >> 8u);
+        write(--sp, static_cast<uint8_t>((returnAddress & 0xFF00) >> 8u));
         write(--sp, static_cast<uint8_t>(returnAddress & 0x00FF));
 
         pc = newAddress;
@@ -2359,7 +2360,7 @@ uint8_t Gameboy::OP_0xD7() {
     //write to memory the return address which is just the pc incremented
     //first the high byte, then the low
 
-    write(--sp, static_cast<uint8_t>(pc & 0xFF00) >> 8u);
+    write(--sp, static_cast<uint8_t>((pc & 0xFF00) >> 8u));
     write(--sp, static_cast<uint8_t>(pc & 0x00FF));
 
     pc = 0x0010;
@@ -2415,7 +2416,7 @@ uint8_t Gameboy::OP_0xDC() {
         //write to memory the return address which is just the program counter incremented
         //first the high byte, then the low
 
-        write(--sp, static_cast<uint8_t>(returnAddress & 0xFF00) >> 8u);
+        write(--sp, static_cast<uint8_t>((returnAddress & 0xFF00) >> 8u));
         write(--sp, static_cast<uint8_t>(returnAddress & 0x00FF));
 
         pc = newAddress;
@@ -2439,7 +2440,7 @@ uint8_t Gameboy::OP_0xDF() {
     //write to memory the return address which is just the pc incremented
     //first the high byte, then the low
 
-    write(--sp, static_cast<uint8_t>(pc & 0xFF00) >> 8u);
+    write(--sp, static_cast<uint8_t>((pc & 0xFF00) >> 8u));
     write(--sp, static_cast<uint8_t>(pc & 0x00FF));
 
     pc = 0x0018;
@@ -2500,7 +2501,7 @@ uint8_t Gameboy::OP_0xE7() {
     //write to memory the return address which is just the pc incremented
     //first the high byte, then the low
 
-    write(--sp, static_cast<uint8_t>(pc & 0xFF00) >> 8u);
+    write(--sp, static_cast<uint8_t>((pc & 0xFF00) >> 8u));
     write(--sp, static_cast<uint8_t>(pc & 0x00FF));
 
     pc = 0x0020;
@@ -2558,7 +2559,7 @@ uint8_t Gameboy::OP_0xEF() {
     //write to memory the return address which is just the pc incremented
     //first the high byte, then the low
 
-    write(--sp, static_cast<uint8_t>(pc & 0xFF00) >> 8u);
+    write(--sp, static_cast<uint8_t>((pc & 0xFF00) >> 8u));
     write(--sp, static_cast<uint8_t>(pc & 0x00FF));
 
     pc = 0x0028;
@@ -2618,7 +2619,7 @@ uint8_t Gameboy::OP_0xF7() {
     //write to memory the return address which is just the pc incremented
     //first the high byte, then the low
 
-    write(--sp, static_cast<uint8_t>(pc & 0xFF00) >> 8u);
+    write(--sp, static_cast<uint8_t>((pc & 0xFF00) >> 8u));
     write(--sp, static_cast<uint8_t>(pc & 0x00FF));
 
     pc = 0x0030;
@@ -2673,7 +2674,7 @@ uint8_t Gameboy::OP_0xFF() {
     //write to memory the return address which is just the pc incremented
     //first the high byte, then the low
 
-    write(--sp, static_cast<uint8_t>(pc & 0xFF00) >> 8u);
+    write(--sp, static_cast<uint8_t>((pc & 0xFF00) >> 8u));
     write(--sp, static_cast<uint8_t>(pc & 0x00FF));
 
     pc = 0x0038;
