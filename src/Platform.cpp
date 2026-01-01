@@ -15,7 +15,7 @@ void Platform::Run( ) {
     while (true) {
 
         if (gb.stopped) {
-            continue;
+            break;
         }
 
         //only handles fetch, decode, execute

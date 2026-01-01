@@ -72,7 +72,9 @@ uint8_t Gameboy::read(uint16_t address) {
 }
 
 void Gameboy::write(uint16_t address, uint8_t byteToWrite) {
-    std::cout << address << std::endl;
+    if (address == 0xFF02 && ((byteToWrite & 0x80) != 0)) {
+        std::cout << read(0xFF01);
+    }
     //handles eram disable/enable
     if (address <= 0x1FFF) {
         //takes only the lower 4 bits of the byte we are writing
@@ -166,9 +168,13 @@ uint8_t Gameboy::Step() {
     if (halted) {
         return 1;
     }
-    std::cout << "pc=" << std::hex << std::setw(4) << std::setfill('0') << (pc)
-          << " val=" << std::setw(2) << (int)read(pc)
-          << std::dec << "\n";
+    // std::cout << "pc=" << std::hex << std::setw(4) << std::setfill('0') << (pc)
+    //       << " val=" << std::setw(2) << (int)read(pc)
+    //         << (" ")
+    //         << std::setw(2) << (int)read(pc+1)
+    //         << (" ")
+    //         << std::setw(2) << (int)read(pc+2)
+    //       << std::dec << "\n";
 
     // get opcode
     // decode and run opcode function
@@ -177,7 +183,6 @@ uint8_t Gameboy::Step() {
     uint8_t cycleCount = (this->*opcodeTable[opcode])();
     //always increment after, we built it to expect this
     pc++;
-        //std::this_thread::sleep_for(std::chrono::seconds(1));
     return cycleCount * 4;
 }
 
@@ -2074,6 +2079,7 @@ uint8_t Gameboy::OP_0xC0() {
         pc = lowerByte;
         uint8_t higherByte = read(sp++);
         pc |= (higherByte << 8u);
+        pc--;
         return 5;
     }
     return 2;
@@ -2175,6 +2181,7 @@ uint8_t Gameboy::OP_0xC8() {
         pc = lowerByte;
         uint8_t higherByte = read(sp++);
         pc |= (higherByte << 8u);
+        pc--;
         return 5;
     }
     return 2;
@@ -2186,6 +2193,7 @@ uint8_t Gameboy::OP_0xC9() {
     pc = lowerByte;
     uint8_t higherByte = read(sp++);
     pc |= (higherByte << 8u);
+    pc--;
     return 4;
 }
 
@@ -2286,6 +2294,7 @@ uint8_t Gameboy::OP_0xD0() {
         pc = lowerByte;
         uint8_t higherByte = read(sp++);
         pc |= (higherByte << 8u);
+        pc--;
         return 5;
     }
     return 2;
@@ -2370,6 +2379,7 @@ uint8_t Gameboy::OP_0xD8() {
         pc = lowerByte;
         uint8_t higherByte = read(sp++);
         pc |= (higherByte << 8u);
+        pc--;
         return 5;
     }
     return 2;
@@ -2383,6 +2393,7 @@ uint8_t Gameboy::OP_0xD9() {
     pc = lowerByte;
     uint8_t higherByte = read(sp++);
     pc |= (higherByte << 8u);
+    pc--;
     return 4;
 }
 
@@ -2467,7 +2478,7 @@ uint8_t Gameboy::OP_0xE2() {
     newAddress |= bc.c;
 
     write(newAddress, af.a);
-    return 3;
+    return 2;
 }
 
 //push hl onto the stack
@@ -2523,6 +2534,7 @@ uint8_t Gameboy::OP_0xE8() {
 //load HL into stack pointer
 uint8_t Gameboy::OP_0xE9() {
     pc = hl.reg16;
+    pc--;
     return 1;
 }
 
@@ -2575,7 +2587,7 @@ uint8_t Gameboy::OP_0xF0() {
 
 //pop the contents of memory at sp into af
 uint8_t Gameboy::OP_0xF1() {
-    af.f = read(sp++);
+    af.f = (read(sp++) & 0xF0);
     af.a = read(sp++);
     return 3;
 }
@@ -2586,7 +2598,7 @@ uint8_t Gameboy::OP_0xF2() {
     newAddress |= read(bc.c);
 
     af.a = read(newAddress);
-    return 3;
+    return 2;
 }
 
 //disables interrupts
