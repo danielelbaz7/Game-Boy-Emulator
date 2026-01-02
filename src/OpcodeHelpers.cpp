@@ -159,3 +159,59 @@ uint8_t OpcodeHelpers::RR(uint8_t &reg, Gameboy& gb) {
 
     return 2;
 }
+
+uint8_t OpcodeHelpers::SWAP(uint8_t &reg, Gameboy& gb) {
+    uint8_t oldHigh = reg & 0xF0;
+    uint8_t oldLow = reg & 0x0F;
+    // adjust old bits
+    oldHigh = oldHigh >> 4u;
+    oldLow = oldLow << 4u;
+    reg = oldLow | oldHigh;
+
+    gb.setFlag('Z', reg ==0);
+    gb.setFlag('N', false);
+    gb.setFlag('H', false);
+    gb.setFlag('C', false);
+
+    return 2;
+}
+
+uint8_t OpcodeHelpers::SRL(uint8_t &reg, Gameboy& gb) {
+    uint8_t mask = 1u;
+    gb.setFlag('C', (mask & reg) != 0);
+    // shift right
+    reg = reg >> 1u;
+    gb.setFlag('Z', reg == 0);
+    gb.setFlag('N', false);
+    gb.setFlag('H', false);
+
+    return 2;
+}
+
+uint8_t OpcodeHelpers::SLA(uint8_t &reg, Gameboy& gb) {
+    uint8_t mask = (1u << 7u);
+    // 1000 0000
+    gb.setFlag('C', (mask & reg) != 0);
+    // shift left
+    reg = reg << 1u;
+    gb.setFlag('Z', reg == 0);
+    gb.setFlag('N', false);
+    gb.setFlag('H', false);
+
+    return 2;
+}
+
+uint8_t OpcodeHelpers::SRA(uint8_t &reg, Gameboy& gb) {
+    uint8_t mask = 1u;
+    uint8_t old7 = (reg & 0x80);
+    gb.setFlag('C', (mask & reg) != 0);
+    // shift right
+    reg = reg >> 1u;
+    reg = reg | old7;
+    gb.setFlag('Z', reg == 0);
+    gb.setFlag('N', false);
+    gb.setFlag('H', false);
+
+    return 2;
+}
+
