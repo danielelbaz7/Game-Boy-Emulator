@@ -46,13 +46,17 @@ uint8_t OpcodeHelpers::CP(uint8_t a, uint8_t toSubtract, Gameboy& gb) {
     return 1;
 }
 
-uint8_t OpcodeHelpers::RLC(uint8_t &a, Gameboy& gb) {
+// ah well does it matter?oth like i just pass in a reg anyways
+// alr siwthf it to &reg
+
+can you pull
+uint8_t OpcodeHelpers::RLC(uint8_t &reg, Gameboy& gb) {
     //puts the old bit in the 0th bit spot
-    uint8_t oldBit7 = (a & 0x80) >> 7u;
+    uint8_t oldBit7 = (reg & 0x80) >> 7u;
     //shift left
-    a = a << 1u;
+    reg = reg << 1u;
     //set bit 0 to old bit 7
-    a |= oldBit7;
+    reg |= oldBit7;
 
     gb.setFlag('Z', a == 0);
     gb.setFlag('N', false);
