@@ -275,7 +275,6 @@ void Gameboy::BuildOpcodeTables() {
     opcodeTable[0xFE] = &Gameboy::OP_0xFE;
     opcodeTable[0xFF] = &Gameboy::OP_0xFF;
 
-    CBopcodeTable[0x80] = OP_Row8ToBNonRef(bc.b, 0);
 }
 
 // OPCODES
@@ -2553,9 +2552,121 @@ uint8_t Gameboy::OP_0xCB0F() {
     return OpcodeHelpers::RRC(af.a, *this);
 }
 
-// Row CB1
+// Row 0xCB1
 
+
+// Rotate the contents of register B to the left.
 uint8_t Gameboy::OP_0xCB10() {
-    
+    return OpcodeHelpers::RL(bc.b, *this);
+}
+
+// Rotate the contents of register C to the left.
+uint8_t Gameboy::OP_0xCB11() {
+    return OpcodeHelpers::RL(bc.c, *this);
+}
+
+// Rotate the contents of register D to the left
+uint8_t Gameboy::OP_0xCB12() {
+    return OpcodeHelpers::RL(de.d, *this);
+}
+
+// Rotate the contents of register E to the left.
+uint8_t Gameboy::OP_0xCB13() {
+    return OpcodeHelpers::RL(de.e, *this);
+}
+
+// Rotate the contents of register H to the left.
+uint8_t Gameboy::OP_0xCB14() {
+    return OpcodeHelpers::RL(hl.h, *this);
+}
+
+// Rotate the contents of register L to the left.
+uint8_t Gameboy::OP_0xCB15() {
+    return OpcodeHelpers::RL(hl.l, *this);
+}
+
+// Rotate the contents of memory specified by register pair HL to the left, through the carry flag.
+uint8_t Gameboy::OP_0xCB16() {
+
+    uint8_t value = read(hl.reg16);
+    OpcodeHelpers::RL(value, *this);
+    write(hl.reg16, value);
+
+    return 4;
+}
+
+// Rotate the contents of register A to the left.
+uint8_t Gameboy::OP_0xCB17() {
+    return OpcodeHelpers::RL(af.a, *this);
+}
+
+
+uint8_t Gameboy::OP_0xCB18() {
+    return OpcodeHelpers::RR(bc.b, *this);
+}
+
+//ROW 0xCB8
+uint8_t Gameboy::OP_0xCB80() {
+    return OpcodeHelpers::RES(bc.b, 0);
+}
+
+uint8_t Gameboy::OP_0xCB81() {
+    return OpcodeHelpers::RES(bc.c, 0);
+}
+
+uint8_t Gameboy::OP_0xCB82() {
+    return OpcodeHelpers::RES(de.d, 0);
+}
+
+uint8_t Gameboy::OP_0xCB83() {
+    return OpcodeHelpers::RES(de.e, 0);
+}
+
+uint8_t Gameboy::OP_0xCB84() {
+    return OpcodeHelpers::RES(hl.h, 0);
+}
+
+uint8_t Gameboy::OP_0xCB85() {
+    return OpcodeHelpers::RES(hl.l, 0);
+}
+
+uint8_t Gameboy::OP_0xCB86() {
+    return OpcodeHelpers::RES(hl.reg16, 0, *this);
+}
+
+uint8_t Gameboy::OP_0xCB87() {
+    return OpcodeHelpers::RES(af.a, 0);
+}
+
+uint8_t Gameboy::OP_0xCB88() {
+    return OpcodeHelpers::RES(bc.b, 1);
+}
+
+uint8_t Gameboy::OP_0xCB89() {
+    return OpcodeHelpers::RES(bc.c, 1);
+}
+
+uint8_t Gameboy::OP_0xCB8A() {
+    return OpcodeHelpers::RES(de.d, 1);
+}
+
+uint8_t Gameboy::OP_0xCB8B() {
+    return OpcodeHelpers::RES(de.e, 1);
+}
+
+uint8_t Gameboy::OP_0xCB8C() {
+    return OpcodeHelpers::RES(hl.h, 1);
+}
+
+uint8_t Gameboy::OP_0xCB8D() {
+    return OpcodeHelpers::RES(hl.l, 1);
+}
+
+uint8_t Gameboy::OP_0xCB8E() {
+    return OpcodeHelpers::RES(hl.reg16, 1, *this);
+}
+
+uint8_t Gameboy::OP_0xCB8F() {
+    return OpcodeHelpers::RES(af.a, 1);
 }
 

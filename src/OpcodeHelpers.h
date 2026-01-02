@@ -19,8 +19,8 @@ namespace OpcodeHelpers {
     uint8_t RES(uint8_t &reg, uint8_t bit);
     uint8_t SET(uint8_t &reg, uint8_t bit);
     
-    uint8_t RES(uint16_t address, uint8_t bit);
-    uint8_t SET(uint16_t address, uint8_t bit);
+    uint8_t RES(uint16_t address, uint8_t bit, Gameboy& gb);
+    uint8_t SET(uint16_t address, uint8_t bit, Gameboy& gb);
 
     uint8_t OpcodeHelpers::RLC(uint8_t &reg, Gameboy& gb);
     uint8_t OpcodeHelpers::RRC(uint8_t &reg, Gameboy& gb);

@@ -9,4 +9,5 @@ add_executable(GameBoyEmulator src/main.cpp
         src/OpcodeHelpers.cpp
         src/OpcodeHelpers.h
         src/Platform.cpp
-        src/Platform.h)
+        src/Platform.h
+        src/Opcodes.cpp)

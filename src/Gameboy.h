@@ -422,11 +422,6 @@ private:
     uint8_t OP_0xCB1D();
     uint8_t OP_0xCB1E();
     uint8_t OP_0xCB1F();
-
-    uint8_t OP_Row8ToBNonRef(uint8_t &reg, uint8_t bit);
-    uint8_t OP_Row8ToBRef(uint16_t address, uint8_t bit);
-    uint8_t OP_RowCToFNonRef(uint8_t &reg, uint8_t bit);
-    uint8_t OP_RowCToFRef(uint16_t address, uint8_t bit);
     
     using OpcodeFunction = uint8_t (Gameboy::*) ();
     OpcodeFunction opcodeTable[256]{};
