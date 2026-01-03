@@ -623,10 +623,15 @@ uint8_t Gameboy::OP_0x07() {
 
 //Store lower byte of SP in address of 16bit immediate, higher in imm+1
 uint8_t Gameboy::OP_0x08() {
+    uint16_t newAddress = read(++pc);
+    newAddress |= (read(++pc) << 8u);
+    
     uint8_t spLower = (sp & 0x00FF);
-    write(++pc, spLower);
     uint8_t spHigher = (sp & 0xFF00) >> 8u;
-    write(++pc, spHigher);
+
+    write(newAddress, spLower);
+    write(newAddress+1, spHigher);
+
     return 5;
 }
 
@@ -986,24 +991,11 @@ uint8_t Gameboy::OP_0x2E() {
     return 2;
 }
 
-// Rotate the contents of register A to the right, through the carry (CY) flag.
-// The contents of bit 7 are copied to bit 6, and the previous contents of bit 6 (before the copy) are copied to bit 5. 
-// The same operation is repeated in sequence for the rest of the register. The previous contents of the carry flag are copied to bit 7.
+// Take the one's complement (i.e., flip all bits) of the contents of register A
 uint8_t Gameboy::OP_0x2F() {
-    //gets old 0 bit
-    uint8_t oldBit7 = (af.a >> 7u) & 0x01;
-    //shift left
-    af.a = af.a << 1u;
-    //set bit 0 to carry flag
-    if (readFlag('C')) {
-        af.a |= 0x01;
-    }
-
-    setFlag('Z', false);
-    setFlag('N', false);
-    setFlag('H', false);
-    setFlag('C', oldBit7 == 0x01);
-
+    af.a = ~af.a;
+    setFlag('N', true);
+    setFlag('H', true);
     return 1;
 }
 
@@ -1032,6 +1024,7 @@ uint8_t Gameboy::OP_0x31() {
 //write the contents of register A into the location specified by hl
 uint8_t Gameboy::OP_0x32() {
     write(hl.reg16, af.a);
+    hl.reg16--;
     return 2;
 }
 
@@ -1141,6 +1134,8 @@ uint8_t Gameboy::OP_0x3E() {
 
 //flip the carry flag
 uint8_t Gameboy::OP_0x3F() {
+    setFlag('N', false);
+    setFlag('H', false);
     setFlag('C', !readFlag('C'));
     return 1;
 }
@@ -1227,7 +1222,7 @@ uint8_t Gameboy::OP_0x4C() {
 
 //Load the contents of register L into register C.
 uint8_t Gameboy::OP_0x4D() {
-    bc.c = hl.h;
+    bc.c = hl.l;
     return 1;
 }
 
@@ -1369,8 +1364,9 @@ uint8_t Gameboy::OP_0x67() {
     return 1;
 }
 
+// Load the contents of register B into register L.
 uint8_t Gameboy::OP_0x68() {
-    hl.h = bc.b;
+    hl.l = bc.b;
     return 1;
 }
 
@@ -2066,42 +2062,42 @@ uint8_t Gameboy::OP_0xB7() {
 
 //calculate a-b and set flags accordingly. same as SUB except we do not change the value of a
 uint8_t Gameboy::OP_0xB8() {
-    return OpcodeHelpers::OR(af.a, bc.b, *this);
+    return OpcodeHelpers::CP(af.a, bc.b, *this);
 }
 
 //calculate a-c and set flags accordingly. same as SUB except we do not change the value of a
 uint8_t Gameboy::OP_0xB9() {
-    return OpcodeHelpers::OR(af.a, bc.c, *this);
+    return OpcodeHelpers::CP(af.a, bc.c, *this);
 }
 
 //calculate a-d and set flags accordingly. same as SUB except we do not change the value of a
 uint8_t Gameboy::OP_0xBA() {
-    return OpcodeHelpers::OR(af.a, de.d, *this);
+    return OpcodeHelpers::CP(af.a, de.d, *this);
 }
 
 //calculate a-e and set flags accordingly. same as SUB except we do not change the value of a
 uint8_t Gameboy::OP_0xBB() {
-    return OpcodeHelpers::OR(af.a, de.e, *this);
+    return OpcodeHelpers::CP(af.a, de.e, *this);
 }
 
 //calculate a-h and set flags accordingly. same as SUB except we do not change the value of a
 uint8_t Gameboy::OP_0xBC() {
-    return OpcodeHelpers::OR(af.a, hl.h, *this);
+    return OpcodeHelpers::CP(af.a, hl.h, *this);
 }
 
 //calculate a-h and set flags accordingly. same as SUB except we do not change the value of a
 uint8_t Gameboy::OP_0xBD() {
-    return OpcodeHelpers::OR(af.a, hl.l, *this);
+    return OpcodeHelpers::CP(af.a, hl.l, *this);
 }
 
 //calculate a- memory at hl and set flags accordingly. same as SUB except we do not change the value of a
 uint8_t Gameboy::OP_0xBE() {
-    return OpcodeHelpers::OR(af.a, read(hl.reg16), *this);
+    return OpcodeHelpers::CP(af.a, read(hl.reg16), *this);
 }
 
 //calculate a-a and set flags accordingly. same as SUB except we do not change the value of a
 uint8_t Gameboy::OP_0xBF() {
-    return OpcodeHelpers::OR(af.a, af.a, *this);
+    return OpcodeHelpers::CP(af.a, af.a, *this);
 }
 
 //ROW xC
@@ -2629,7 +2625,7 @@ uint8_t Gameboy::OP_0xF1() {
 //load memory at address in register C (0xFF(c value)) where c stores last 8 bits into register a
 uint8_t Gameboy::OP_0xF2() {
     uint16_t newAddress = 0xFF00;
-    newAddress |= read(bc.c);
+    newAddress |= bc.c;
 
     af.a = read(newAddress);
     return 2;
@@ -2748,14 +2744,14 @@ uint8_t Gameboy::OP_0xCB02() {
     return OpcodeHelpers::RLC(de.d, *this);
 }
 
-//Rotate the contents of register D to the left.
+//Rotate the contents of register E to the left.
 uint8_t Gameboy::OP_0xCB03() {
-    return OpcodeHelpers::RLC(de.d, *this);
+    return OpcodeHelpers::RLC(de.e, *this);
 }
 
-// Rotate the contents of register E to the left
+// Rotate the contents of register H to the left.
 uint8_t Gameboy::OP_0xCB04() {
-    return OpcodeHelpers::RLC(de.e, *this);
+    return OpcodeHelpers::RLC(hl.h, *this);
 }
 
 // Rotate the contents of register L to the left
@@ -2785,7 +2781,7 @@ uint8_t Gameboy::OP_0xCB08() {
 
 // Rotate the contents of register C to the right.
 uint8_t Gameboy::OP_0xCB09() {
-    return OpcodeHelpers::RRC(bc.b, *this);
+    return OpcodeHelpers::RRC(bc.c, *this);
 }
 
 // Rotate the contents of register D to the right.

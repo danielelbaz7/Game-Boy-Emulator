@@ -1,0 +1,37 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build GameBoy Emulator",
+			"type": "shell",
+			"command": "cmake",
+			"args": [
+				"-S",
+				"c:\\projects\\GameBoy-Emulator",
+				"-B",
+				"c:\\projects\\GameBoy-Emulator\\build"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Compile GameBoy Emulator",
+			"type": "shell",
+			"command": "cmake",
+			"args": [
+				"--build",
+				"c:\\projects\\GameBoy-Emulator\\build",
+				"--config",
+				"Release"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": "build"
+		}
+	]
+}
