@@ -111,6 +111,7 @@ uint8_t OpcodeHelpers::RLC(uint8_t &reg, Gameboy& gb) {
     return 2;
 }
 
+
 uint8_t OpcodeHelpers::RRC(uint8_t &reg, Gameboy& gb) {
     uint8_t oldBit0 = (reg & 0x01) << 7u;
     reg = reg >> 1u;
