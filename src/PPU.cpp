@@ -2,7 +2,9 @@
 
 void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
     TcyclesSinceLastScanline += TcyclesSinceLastUpdate;
-
+    if (TcyclesSinceLastScanline > 456) {
+        currentScanline++;
+    }
 }
 
 void PPU::BeginNewFrame() {
