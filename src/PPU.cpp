@@ -12,25 +12,25 @@ void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
         for (int i = 0; i < totalSprites; i++) {
             //times 4 since there are 4 bytes per sprite, 40 sprites total
             uint8_t curSpriteYValue = gb.read(OAMStartAddress + i*bytesPerSprite);
-            if (currentScanline >= (curSpriteYValue - 16) &&
-                currentScanline < (curSpriteYValue - 16 + spriteHeight())) {
-
-                Sprite s{gb.read(OAMStartAddress + i*bytesPerSprite),
-                gb.read(1 +OAMStartAddress + i*bytesPerSprite),
-                gb.read(2 + OAMStartAddress + i*bytesPerSprite),
-                gb.read(3 + OAMStartAddress + i*bytesPerSprite)
-                };
-
-                //increment after using
-                spriteBuffer[nextEmptySlot++] = s;
-
-                if (nextEmptySlot > sizeof(spriteBuffer) * bytesPerSprite) {
-                    break;
-                }
-
+            if (currentScanline < (curSpriteYValue - 16) ||
+                currentScanline >= (curSpriteYValue - 16 + spriteHeight())) {
+                continue;
             }
+
+            Sprite s{gb.read(curSpriteYValue), gb.read(1 + curSpriteYValue),
+            gb.read(2 + curSpriteYValue),gb.read(3 + curSpriteYValue)};
+
+            //increment after using
+            spriteBuffer[nextEmptySlot++] = s;
+
+            if (nextEmptySlot > sizeof(spriteBuffer) * bytesPerSprite) {
+                break;
+            }
+
         }
+        modesCompleted[2] = true;
     }
+
 }
 
 void PPU::BeginNewFrame() {
