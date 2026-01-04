@@ -14,6 +14,8 @@ public:
 
 private:
     Gameboy gb{};
+    const unsigned int TcyclesPerSecond = 70224;
+    const std::chrono::microseconds microSecondsPerFrame = std::chrono::microseconds{16744};
 
 };
 
