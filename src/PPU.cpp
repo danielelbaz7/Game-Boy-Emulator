@@ -1,5 +1,6 @@
 #include "PPU.h"
 
+#include <iostream>
 #include <SDL2/SDL_render.h>
 
 PPU::PPU(Memory& m) : mem(m) {
@@ -13,6 +14,7 @@ void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
     if (TcyclesSinceLastScanline >= 456 && currentMode == PPUMode::HBlank) {
         //reset to a new line, subtracting 456 also keeps overflow if it exists
         currentScanline++;
+        nextEmptySlot = 0;
         mem.WriteScanline(currentScanline);
         TcyclesSinceLastScanline -= 456;
         mem.setOAMDisabled(false);
@@ -59,8 +61,7 @@ void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
             pixelColor |= ((tileData[(tileRow * 2) + 1] & (0x01 << tileColumn)) >> tileColumn) << 1u;
 
             //then grab the shade this colorID represents from
-            uint8_t shade = (Read(0xFF47) & (0x03 << (pixelColor * 2))) << (pixelColor * 2);
-
+            uint8_t shade = (Read(0xFF47) & (0x03 << (pixelColor * 2))) >> (pixelColor * 2);
             scanline[pixel] = colors[shade];
         }
         //copy the current scanline into our framebuffer
@@ -99,6 +100,7 @@ void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
 
     else if (TcyclesSinceLastScanline >= 456 && currentMode == PPUMode::VBlank) {
         currentScanline++;
+        nextEmptySlot = 0;
         mem.WriteScanline(currentScanline);
         TcyclesSinceLastScanline -= 456;
         if (currentScanline >= 154) {

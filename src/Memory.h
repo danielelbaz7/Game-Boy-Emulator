@@ -24,6 +24,8 @@ public:
         isOAMDisabledByPPU = setTo;
     }
 
+    void InitializeMemory();
+
 
 private:
     // All addresses/memory available to the Gameboy, 16-bit addresses

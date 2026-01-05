@@ -13,6 +13,7 @@ Platform::Platform(const char* filename)
     texture(SDL_CreateTexture( renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 160, 144)) {
     //initializes the draw color, and this whole constructor places the rom into memory and creates an SDL window
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    mem.InitializeMemory();
     mem.LoadRom(filename);
 }
 
