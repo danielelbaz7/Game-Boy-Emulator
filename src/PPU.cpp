@@ -3,7 +3,6 @@
 PPU::PPU(Memory& m) : mem(m) {
     mem.WriteScanline(currentScanline);
     mem.setOAMDisabled(true);
-    
 }
 
 void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
@@ -13,6 +12,7 @@ void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
     }
 
     if(TcyclesSinceLastScanline >= (80 + 172) && currentMode == PPUMode::Draw) {
+        uint32_t scanline[160]{};
         //iterates through every pixel
         for(uint8_t pixel = 0; pixel < 160; pixel++) {
             //background pixel detection
@@ -39,10 +39,15 @@ void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
             uint8_t tileColumn = 7 - (xPixel % 8);
             uint8_t tileRow = yPixel % 8;
 
+            //extracting the color ID from the two rows representing the pixel
             uint8_t pixelColor{};
             pixelColor = (tileData[tileRow * 2] & (0x01 << tileColumn)) >> tileColumn;
             pixelColor |= ((tileData[(tileRow * 2) + 1] & (0x01 << tileColumn)) >> tileColumn) << 1u;
 
+            //then grab the shade this colorID represents from
+            uint8_t shade = (Read(0xFF47) & (0x03 << (pixelColor * 2))) << (pixelColor * 2);
+
+            scanline[pixel] = colors[shade];
         }
     }
 

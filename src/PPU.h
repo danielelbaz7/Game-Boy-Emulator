@@ -20,7 +20,12 @@ public:
     
 
 private:
-
+    const uint32_t colors[4] = {
+        0xF2FBFFFF,  // very light blue
+        0xA9D8FFFF,  // light blue
+        0x3B82C4FF,  // medium blue
+        0x0B1D39FF   // deep navy
+    };
     uint8_t Read(uint16_t address) const { return mem.Read(address, MemoryAccessor::PPU); }
     uint32_t frameBuffer[144][160] = {};
 
