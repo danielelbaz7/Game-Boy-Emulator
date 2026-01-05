@@ -20,12 +20,28 @@ void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
             uint8_t xScroll = Read(0xFF43);
             uint8_t yScroll = Read(0xFF42);
 
-            uint8_t xTile = ((xScroll + pixel) & 0xFF) / 8;
-            uint8_t yTile = ((yScroll + currentScanline) & 0xFF) / 8;
-            
-            uint8_t currentTile = Read((yTile * 32) + xTile);
+            //this is the current pixel we are on in the 256x256 grid
+            uint8_t xPixel = xScroll + pixel;
+            uint8_t yPixel = yScroll + currentScanline;
 
+            //current tile we are on in 32x32 tile map
+            uint8_t xTile = (xPixel & 0xFF) / 8;
+            uint8_t yTile = (yPixel & 0xFF) / 8;
+
+            uint16_t tileMapStartAddress = currentTileMap() ? 0x9C00 : 0x9800;
+
+            //current tileID
+            uint8_t currentTile = Read(tileMapStartAddress + (yTile * 32) + xTile);
+
+            //loads tileData, each 2 rows of this represent the color data of one row of pixels
             std::array<uint8_t, 16> tileData = mem.ReadTile(currentTile);
+
+            uint8_t tileColumn = 7 - (xPixel % 8);
+            uint8_t tileRow = yPixel % 8;
+
+            uint8_t pixelColor{};
+            pixelColor = (tileData[tileRow * 2] & (0x01 << tileColumn)) >> tileColumn;
+            pixelColor |= ((tileData[(tileRow * 2) + 1] & (0x01 << tileColumn)) >> tileColumn) << 1u;
 
         }
     }
