@@ -7,11 +7,22 @@ PPU::PPU(Memory& m) : mem(m) {
 
 void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
     TcyclesSinceLastScanline += TcyclesSinceLastUpdate;
-    if (TcyclesSinceLastScanline > 456) {
+
+    if (TcyclesSinceLastScanline >= 456 && currentMode == PPUMode::HBlank) {
+        //reset to a new line, subtracting 456 also keeps overflow if it exists
         currentScanline++;
+        TcyclesSinceLastScanline -= 456;
+        mem.setOAMDisabled(false);
+        if (currentScanline >= 143) {
+            currentMode = PPUMode::VBlank;
+        } else {
+            currentMode = PPUMode::OAM;
+            mem.setOAMDisabled(true);
+        }
     }
 
-    if(TcyclesSinceLastScanline >= (80 + 172) && currentMode == PPUMode::Draw) {
+    //252 = 80 + 172
+    else if(TcyclesSinceLastScanline >= (252) && currentMode == PPUMode::Draw) {
         uint32_t scanline[160]{};
         //iterates through every pixel
         for(uint8_t pixel = 0; pixel < 160; pixel++) {
@@ -49,11 +60,17 @@ void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
 
             scanline[pixel] = colors[shade];
         }
+        //copy the current scanline into our framebuffer
+        std::copy(std::begin(scanline), std::end(scanline),
+            frameBuffer[currentScanline]);
+
+        currentMode = PPUMode::HBlank;
+        mem.setOAMDisabled(false);
     }
 
     //if we just hit 80 t cycles and we haven't read OAM yet, now is the time to do that
     //this takes the first 10 sprites that need to be rendered and places them into the internal sprite buffer
-    if (TcyclesSinceLastScanline >= 80 && currentMode == PPUMode::OAM) {
+    else if (TcyclesSinceLastScanline >= 80 && currentMode == PPUMode::OAM) {
         for (uint8_t i = 0; i < totalSprites; i++) {
             //times 4 since there are 4 bytes per sprite, 40 sprites total
             uint16_t firstByte = OAMStartAddress + i*bytesPerSprite;
@@ -75,6 +92,15 @@ void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
 
         }
         currentMode = PPUMode::Draw;
+    }
+
+    else if (TcyclesSinceLastScanline >= 456 && currentMode == PPUMode::VBlank) {
+        currentScanline++;
+        TcyclesSinceLastScanline -= 456;
+        if (currentScanline >= 154) {
+            currentScanline = 0;
+
+        }
     }
 }
 
