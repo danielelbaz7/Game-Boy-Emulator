@@ -2,7 +2,7 @@
 // Created by Daniel Elbaz on 1/4/26.
 //
 #include <vector>
-
+#include  <cstdint>
 #ifndef GAMEBOYEMULATOR_MEMORY_H
 #define GAMEBOYEMULATOR_MEMORY_H
 

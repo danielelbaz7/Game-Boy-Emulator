@@ -1,6 +1,7 @@
 #include "PPU.h"
 
 #include <iostream>
+#include <array>
 #include <SDL2/SDL_render.h>
 
 PPU::PPU(Memory& m) : mem(m) {

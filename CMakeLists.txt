@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 20)
 if(WIN32)
     # Windows with MinGW
     set(SDL2_DIR "C:/sdl2/SDL2-2.30.10/x86_64-w64-mingw32")
-    set(SDL2_INCLUDE_DIR "${SDL2_DIR}/include/SDL2")
+    set(SDL2_INCLUDE_DIR "${SDL2_DIR}/include")
     set(SDL2_LIB_DIR "${SDL2_DIR}/lib")
 elseif(APPLE)
     # macOS with Homebrew
