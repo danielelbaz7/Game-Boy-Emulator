@@ -25,20 +25,32 @@ private:
     Memory& mem;
     unsigned int TcyclesSinceLastScanline{};
     uint8_t currentScanline{}; //goes from 0-153, last 10 are vblank
-    
-    
+    uint8_t windowLinesWritten{};
+
+    void DrawBackground(uint32_t *scanline);
+    void DrawWindow(uint32_t *scanline);
 
     //lambda function that returns the current sprite height at any point
     [[nodiscard]] uint8_t spriteHeight() const { return ((Read(0xFF40) & 0x04) >> 2u == 1) ? 16 : 8; }
-    [[nodiscard]] uint8_t currentTileMap() const { return ((Read(0xFF40) & 0x08) >> 3u); }
+    //checks bit 3, to tell bg which address to use
+    [[nodiscard]] bool LCDCBit3Tilemaps() const { return (((Read(0xFF40) & 0x08) >> 3u) == 1) ? true : false; }
+    [[nodiscard]] bool windowEnabled() const { return ((((Read(0xFF40) & 0x10) >> 4u) == 1) ? true : false)
+        && (((Read(0xFF40) & 0x01) == 1) ? true : false); }
+    [[nodiscard]] uint8_t windowStartY() const { return Read(0xFF4A); }
+    [[nodiscard]] uint8_t windowStartX() const { return Read(0xFF4B); }
+    //same as lcdcbit3 tilemaps, just for window
+    [[nodiscard]] bool LCDCBit6Tilemaps() const { return (((Read(0xFF40) & 0x40) >> 6u) == 1) ? true : false; }
+
+
+
 
     constexpr static uint16_t OAMStartAddress = 0xFE00;
     constexpr static uint8_t totalSprites = 40;
     constexpr static uint8_t bytesPerSprite = 4;
 
     struct Sprite {
-        uint8_t x;
         uint8_t y;
+        uint8_t x;
         uint8_t tile;
         uint8_t flags;
     };

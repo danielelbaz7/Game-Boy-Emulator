@@ -31,11 +31,13 @@ std::array<uint8_t, 16> Memory::ReadTile(uint8_t tileID, MemoryAccessor caller) 
 
 
 //write to the scanline register to indicate which scanline we are on
-void Memory::WriteScanline(uint8_t value) {
-    io[68] = value;
+void Memory::WriteScanline(uint8_t value, MemoryAccessor caller) {
+    if (caller == MemoryAccessor::PPU) {
+        io[68] = value;
+    }
 }
 
-uint8_t Memory::Read(uint16_t address, MemoryAccessor callerm) {
+uint8_t Memory::Read(uint16_t address, MemoryAccessor caller) {
     if (address <= 0x3FFF) {
         return rom[address];
     }
