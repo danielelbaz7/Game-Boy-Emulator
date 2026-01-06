@@ -10,7 +10,6 @@ PPU::PPU(Memory& m) : mem(m) {
     mem.setOAMDisabled(true);
 }
 
-
 void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
     TcyclesSinceLastScanline += TcyclesSinceLastUpdate;
 
