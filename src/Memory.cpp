@@ -28,6 +28,17 @@ std::array<uint8_t, 16> Memory::ReadTile(uint8_t tileID, MemoryAccessor caller) 
     return tileData;
 }
 
+std::array<uint8_t, 16> Memory::ReadSpriteTile(uint8_t tileID, MemoryAccessor caller) {
+    std::array<uint8_t, 16> tileData{};
+    uint16_t addressToRead = 0x8000 + (tileID * 16);
+
+    for(uint8_t curByte = 0; curByte < 16; curByte++) {
+        tileData[curByte] = Read(addressToRead + curByte);
+    }
+
+    return tileData;
+}
+
 
 
 //write to the scanline register to indicate which scanline we are on

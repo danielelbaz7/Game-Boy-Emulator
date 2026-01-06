@@ -183,55 +183,45 @@ void PPU::DrawWindow(uint32_t *scanline) {
 void PPU::DrawSprites(uint32_t *scanline) {
     //iterates through every pixel in scanline
     for(uint8_t pixel = 0; pixel < 160; pixel++) {
-        //the current x position is offset by 7, so the window starts at 7 less than what is in the register
-        //if the window start x is 7, we start drawing at (in our minds) x=0
-        if (pixel < (windowStartX() - 7)) {
-            continue;
+        for (Sprite s : spriteBuffer) {
+            //sprite.x stores the starting x position + 8 (same as ending x position),
+            //so x >= s.x-8 and x < s.x means sprite is rendered on this pixel
+            if (pixel < (s.x - 8) || pixel >= s.x) {
+                continue;
+            }
+
+            //say we are on pixel 5 and the sprite.x is pixel 10. then, sprite ends on pixel 10 (not inclusive), and
+            //it starts on pixel 2. subtract (s.x-8) will subtract 2 and get us 3, we basically pull back the sprite
+            //and pixel to see where it falls in a relative sense to the pixel width
+            //y is the same but offset is 16
+            uint8_t spriteX =  pixel - (s.x - 8);
+            uint8_t spriteY = currentScanline - (s.y - 16);
+
+            //flip if the flip flags are set
+            if (SpriteFlagBitValue(s, 5)) { spriteX = 7 - spriteX; }
+            if (SpriteFlagBitValue(s, 6)) { spriteY = (spriteHeight()-1) - spriteY; }
+
+            std::array<uint8_t, 16> tileData;
+            if (spriteY >= 8) {
+                 tileData = mem.ReadTile(s.tile + 1);
+            } else {
+                tileData = mem.ReadTile(s.tile);
+            }
+
+
+            uint8_t pixelColor{};
+            pixelColor = (tileData[spriteY * 2] & (0x01 << (7-spriteX))) >> (7-spriteX);
+            pixelColor |= ((tileData[(spriteY * 2) + 1] & (0x01 << (7-spriteX))) >> (7-spriteX)) << 1u;
+
+            //if the pixelcolor is 0, its transparent so we skip it
+            if (pixelColor == 0) { continue; }
+
+            //if bit 4 is 1, we use the palette values in FF49, otherwise FF48
+            uint8_t paletteAddress = SpriteFlagBitValue(s, 4) ? 0xFF49 : 0xFF48;
+            uint8_t shade = (Read(paletteAddress) & (0x03 << (pixelColor * 2))) >> (pixelColor * 2);
+            scanline[pixel] = colors[shade];
+
         }
-
-        //window tilemap does not utilize scroll, everything starts at top left
-        //the subtraction basically "pulls" us back to the beginning of the tilemap and gets how far we are from
-        //there by calculating the actual pixel value
-        //this is converting from screen pixel to how many pixels we are into drawing the window
-        uint8_t xPixel = pixel - (windowStartX() - 7);
-        uint8_t yPixel = windowLinesWritten;
-
-
-        //current tile we are on in 32x32 tile map
-        //xtile calculates the pixel minus where we are supposed to start which tells you how far into the window
-        //tilemap you are. if the window is meant to start on screen pixel 0, windowStartX() will be 7
-        //so subtracting (start - 7) will yield how many pixels we are actually into the tilemap
-        //so we will pull the correct one. if pixel is 10 in this case, we want to render the first tile
-        //not the 0th one
-
-        uint8_t xTile = (xPixel & 0xFF) / 8;
-        uint8_t yTile = (yPixel & 0xFF) / 8;
-
-        uint16_t tileMapStartAddress = LCDCBit6Tilemaps() ? 0x9C00 : 0x9800;
-
-        //current tileID
-        uint8_t currentTile = Read(tileMapStartAddress + (yTile * 32) + xTile);
-
-        //loads tileData, each 2 rows of this represent the color data of one row of pixels
-        std::array<uint8_t, 16> tileData = mem.ReadTile(currentTile);
-
-        uint8_t tileColumn = 7 - (xPixel % 8);
-        uint8_t tileRow = yPixel % 8;
-
-        //extracting the color ID from the two rows representing the pixel
-        uint8_t pixelColor{};
-        pixelColor = (tileData[tileRow * 2] & (0x01 << tileColumn)) >> tileColumn;
-        pixelColor |= ((tileData[(tileRow * 2) + 1] & (0x01 << tileColumn)) >> tileColumn) << 1u;
-
-        //then grab the shade this colorID represents from
-        uint8_t shade = (Read(0xFF47) & (0x03 << (pixelColor * 2))) >> (pixelColor * 2);
-        scanline[pixel] = colors[shade];
     }
 }
-
-
-
-
-
-
 

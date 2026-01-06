@@ -22,6 +22,7 @@ public:
     void WriteScanline(uint8_t value, MemoryAccessor caller = MemoryAccessor::CPU);
 
     std::array<uint8_t, 16> ReadTile(uint8_t tileID, MemoryAccessor caller = MemoryAccessor::CPU);
+    std::array<uint8_t, 16> ReadSpriteTile(uint8_t tileID, MemoryAccessor caller = MemoryAccessor::CPU);
 
     uint8_t Read(uint16_t address, MemoryAccessor caller = MemoryAccessor::CPU);
     void Write(uint16_t address, uint8_t byteToWrite);

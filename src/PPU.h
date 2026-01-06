@@ -43,8 +43,6 @@ private:
     [[nodiscard]] bool LCDCBit6Tilemaps() const { return (((Read(0xFF40) & 0x40) >> 6u) == 1) ? true : false; }
 
 
-
-
     constexpr static uint16_t OAMStartAddress = 0xFE00;
     constexpr static uint8_t totalSprites = 40;
     constexpr static uint8_t bytesPerSprite = 4;
@@ -55,6 +53,10 @@ private:
         uint8_t tile;
         uint8_t flags;
     };
+
+    bool SpriteFlagBitValue(const Sprite &s, uint8_t bit) {
+        return (s.flags & (0x01 << bit)) == 0 ? false : true;
+    }
 
     Sprite spriteBuffer[10] = {};
     uint8_t nextEmptySlot{};
