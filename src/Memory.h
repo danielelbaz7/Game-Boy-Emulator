@@ -32,7 +32,6 @@ public:
     void setMode(PPUMode currentMode) {mode = currentMode;};
 
 private:
-
     PPUMode mode;
 
     // All addresses/memory available to the Gameboy, 16-bit addresses
