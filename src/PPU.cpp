@@ -135,9 +135,9 @@ void PPU::DrawBackground(uint32_t *scanline, uint8_t *bgWindowScanline) {
         pixelColor = (tileData[tileRow * 2] & (0x01 << tileColumn)) >> tileColumn;
         pixelColor |= ((tileData[(tileRow * 2) + 1] & (0x01 << tileColumn)) >> tileColumn) << 1u;
 
+        bgWindowScanline[pixel] = pixelColor;
         //then grab the shade this colorID represents from
         uint8_t shade = (Read(0xFF47) & (0x03 << (pixelColor * 2))) >> (pixelColor * 2);
-        bgWindowScanline[pixel] = shade;
         scanline[pixel] = colors[shade];
     }
 }
@@ -186,9 +186,10 @@ void PPU::DrawWindow(uint32_t *scanline, uint8_t *bgWindowScanline) {
         pixelColor = (tileData[tileRow * 2] & (0x01 << tileColumn)) >> tileColumn;
         pixelColor |= ((tileData[(tileRow * 2) + 1] & (0x01 << tileColumn)) >> tileColumn) << 1u;
 
+        bgWindowScanline[pixel] = pixelColor;
+
         //then grab the shade this colorID represents from
         uint8_t shade = (Read(0xFF47) & (0x03 << (pixelColor * 2))) >> (pixelColor * 2);
-        bgWindowScanline[pixel] = shade;
         scanline[pixel] = colors[shade];
     }
 }
@@ -197,7 +198,7 @@ void PPU::DrawWindow(uint32_t *scanline, uint8_t *bgWindowScanline) {
 void PPU::DrawSprites(uint32_t *scanline, uint8_t *bgWindowScanline) {
     //iterates through every pixel in scanline
     for(uint8_t pixel = 0; pixel < 160; pixel++) {
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < nextEmptySlot; i++) {
             Sprite s = spriteBuffer[i];
             //sprite.x stores the starting x position + 8 (same as ending x position),
             //so x >= s.x-8 and x < s.x means sprite is rendered on this pixel
@@ -214,19 +215,20 @@ void PPU::DrawSprites(uint32_t *scanline, uint8_t *bgWindowScanline) {
 
             //flip if the flip flags are set
             if (SpriteFlagBitValue(s, 5)) { spriteX = 7 - spriteX; }
-            if (SpriteFlagBitValue(s, 6)) { spriteY = (spriteHeight()-1) - spriteY; }
 
             std::array<uint8_t, 16> tileData;
             if (spriteHeight() == 16) {
                 if (spriteY >= 8) {
-                    tileData = mem.ReadTile(s.tile | 0x01);
+                    tileData = mem.ReadSpriteTile(s.tile | 0x01);
                     spriteY -= 8;
                 } else {
-                    tileData = mem.ReadTile(s.tile & 0xFE);
+                    tileData = mem.ReadSpriteTile(s.tile & 0xFE);
                 }
             } else {
-                tileData = mem.ReadTile(s.tile);
+                tileData = mem.ReadSpriteTile(s.tile);
             }
+
+            if (SpriteFlagBitValue(s, 6)) { spriteY = (spriteHeight()-1) - spriteY; }
 
             uint8_t pixelColor{};
             pixelColor = (tileData[spriteY * 2] & (0x01 << (7-spriteX))) >> (7-spriteX);
