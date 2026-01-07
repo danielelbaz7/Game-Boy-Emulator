@@ -77,7 +77,6 @@ private:
     bool IME{false}; //interrupt master enable flag
     bool handleInterrupts(); // returns true if interrupt is 'used' and pc jumps
 
-
     void BuildOpcodeTables();
 
     bool halted = false;
