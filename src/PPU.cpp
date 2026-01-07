@@ -10,14 +10,15 @@ PPU::PPU(Memory& m) : mem(m) {
     mem.WriteScanline(currentScanline, MemoryAccessor::PPU);
 }
 
-void checkStatInterrupt(uint8_t line) {
+void PPU::CheckStatInterrupt() {
     // everytime under currentScanLine++ or change etc
     // does line (currentScanline) = lyc? (assuming other conditions are met (stat reg bit 6 is 1))
     // yes? set IF bit 1 and change bit 2 of stat to 1
     // no ? set bit 2 of stat to 0
-    
 
     // TODO : implement logic & put under scanline changes
+    uint8_t LYC = Read(0xFF45);
+    mem.WriteCoincidence(currentScanline == LYC);
 }
 
 void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
@@ -26,6 +27,7 @@ void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
     if (TcyclesSinceLastScanline >= 456 && currentMode == PPUMode::HBlank) {
         //reset to a new line, subtracting 456 also keeps overflow if it exists
         currentScanline++;
+        CheckStatInterrupt();
         nextEmptySlot = 0;
         mem.WriteScanline(currentScanline, MemoryAccessor::PPU);
         TcyclesSinceLastScanline -= 456;
@@ -100,6 +102,7 @@ void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
 
     else if (TcyclesSinceLastScanline >= 456 && currentMode == PPUMode::VBlank) {
         currentScanline++;
+        CheckStatInterrupt();
         nextEmptySlot = 0;
         TcyclesSinceLastScanline -= 456;
         if (currentScanline >= 154) {

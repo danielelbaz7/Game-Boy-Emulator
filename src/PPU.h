@@ -30,6 +30,7 @@ private:
     void DrawBackground(uint32_t *scanline, uint8_t *bgWindowScanline);
     void DrawWindow(uint32_t *scanline, uint8_t *bgWindowScanline);
     void DrawSprites(uint32_t *scanline, uint8_t *bgWindowScanline);
+    void CheckStatInterrupt();
 
     [[nodiscard]] bool spritesEnabled() const { return ((((Read(0xFF40) & 0x02) >> 1u) == 1) ? true : false); }
     //lambda function that returns the current sprite height at any point

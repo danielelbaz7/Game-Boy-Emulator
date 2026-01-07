@@ -22,7 +22,7 @@ void CPU::write(uint16_t address, uint8_t byteToWrite) {
 
 bool CPU::checkInterrupt(uint8_t IF, uint8_t IE, int bitToCheck) {
     // mask to current bit
-    uint8_t mask = 1u << bitToCheck;
+    uint8_t mask = 0x01u << bitToCheck;
     IF = IF & mask;
     IE = IE & mask;
 
@@ -45,7 +45,7 @@ bool CPU::handleInterrupts() {
 
     if (!IME) {
         return false; // interrupts disabled
-    }    
+    }
     IME = false;
 
     // handle interrupts (ONE MAX) from bit 0 to bit 7
@@ -59,7 +59,7 @@ bool CPU::handleInterrupts() {
         return true;
     }
     if (checkInterrupt(IF, IE, 1)) {
-        // handle LCD jump and reset bit 1
+        // handle LCD STAT jump and reset bit 1
         pc = 0x0048;
         mem.Write(0xFF0F, (IF & 0xFD));
         return true;

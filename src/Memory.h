@@ -31,6 +31,7 @@ public:
     void InitializeMemory();
 
     void setMode(PPUMode newMode);
+    void WriteCoincidence(bool LYEqualsLYC);
 
 private:
     // set to default mode (VBlank)

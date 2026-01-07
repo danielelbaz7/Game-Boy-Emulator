@@ -10,34 +10,46 @@
 // #include <cstdint>
 #include "PPU.h"
 
-
-
 bool Memory::isLcdOn() {
-    uint8_t mask = 1 << 7u;
+    uint8_t mask = 0x01 << 7u;
     uint8_t lcd = io[0x40];
     return (lcd & mask) != 0;
 }
 
+void Memory::WriteCoincidence(bool LYEqualsLYC) { //sets stat bit 2 (read only) indicating whether ly=lyc occurred
+    if (LYEqualsLYC) {
+        io[0x41] |= 0x04;
+        if ((Read(0xFF41) & 0x40) != 0) {
+            io[0x0f] |= 0x02;
+        }
+    }
+    else { io[0x41] &= ~0x04; }
+};
+
+//io[0x0F] = 0xFF0F which is the IF register
 void Memory::setMode(PPUMode newMode) {
     // check current mode to handle setting interrupts
+    //set bits 0 and 1 to the current mode that we are changing to
+    io[41] = ((io[41] & 0xFC) | static_cast<uint8_t>(newMode));
+
     // v-blank check
     if (mode != PPUMode::VBlank && newMode == PPUMode::VBlank) {
-        io[0x0F] = (1u | io[0x0F]); // set bit 0 of IF
+        io[0x0F] = (0x01 | io[0x0F]); // set bit 0 of IF
     }
 
     // stat reg check (bit 1) | 3 modes to check
     uint8_t statReg = io[0x41];
     bool bit3 = (statReg & 0x08) != 0;
     if (newMode == PPUMode::HBlank && bit3) {
-        io[0x0F] = (2u | io[0x0F]); // set bit 1 of IF
+        io[0x0F] = (0x02 | io[0x0F]); // set bit 1 of IF
     }
     bool bit4 = (statReg & 0x10) != 0;
     if (newMode == PPUMode::VBlank && bit4) {
-        io[0x0F] = (2u | io[0x0F]); // set bit 1 of IF
+        io[0x0F] = (0x02 | io[0x0F]); // set bit 1 of IF
     }
     bool bit5 = (statReg & 0x20) != 0;
     if (newMode == PPUMode::OAM && bit5) {
-        io[0x0F] = (2u | io[0x0F]); // set bit 1 of IF
+        io[0x0F] = (0x02 | io[0x0F]); // set bit 1 of IF
     } 
     mode = newMode; 
 
