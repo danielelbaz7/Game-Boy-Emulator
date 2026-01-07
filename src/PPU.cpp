@@ -90,7 +90,7 @@ void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
 
         //lambda function to sort the sprite buffer first by the lower x value and if these are the same,
         //the lower OAM index
-        std::sort(std::begin(spriteBuffer), std::end(spriteBuffer),
+        std::sort(std::begin(spriteBuffer), std::begin(spriteBuffer) + nextEmptySlot,
             [](const Sprite &a, const Sprite &b) {
             if (a.x != b.x) { return a.x < b.x; }
                 return a.OAMIndex < b.OAMIndex;
@@ -117,6 +117,13 @@ void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
 }
 
 void PPU::DrawBackground(uint32_t *scanline, uint8_t *bgWindowScanline) {
+    if (!backgroundEnabled()) {
+        uint8_t color0 = Read(0xFF47) & 0x03;
+        for(uint8_t pixel = 0; pixel < 160; pixel++) {
+            scanline[pixel] = colors[color0];
+        }
+        return;
+    }
     //iterates through every pixel in scanline
     for(uint8_t pixel = 0; pixel < 160; pixel++) {
         //background pixel detection
@@ -150,6 +157,7 @@ void PPU::DrawBackground(uint32_t *scanline, uint8_t *bgWindowScanline) {
 
         bgWindowScanline[pixel] = pixelColor;
         //then grab the shade this colorID represents from
+        //0xFF47 is the palette for windows and bg
         uint8_t shade = (Read(0xFF47) & (0x03 << (pixelColor * 2))) >> (pixelColor * 2);
         scanline[pixel] = colors[shade];
     }
@@ -158,6 +166,9 @@ void PPU::DrawBackground(uint32_t *scanline, uint8_t *bgWindowScanline) {
 
 void PPU::DrawWindow(uint32_t *scanline, uint8_t *bgWindowScanline) {
     bool drewAPixel = false;
+    if (!backgroundEnabled()) {
+
+    }
     //iterates through every pixel in scanline
     for(uint8_t pixel = 0; pixel < 160; pixel++) {
         //the current x position is offset by 7, so the window starts at 7 less than what is in the register
@@ -203,6 +214,8 @@ void PPU::DrawWindow(uint32_t *scanline, uint8_t *bgWindowScanline) {
         bgWindowScanline[pixel] = pixelColor;
 
         //then grab the shade this colorID represents from
+        //use 0x03 since it is 0000 0011 and move it to mask the correct color
+        //0xFF47 is the palette for windows and bg
         uint8_t shade = (Read(0xFF47) & (0x03 << (pixelColor * 2))) >> (pixelColor * 2);
         scanline[pixel] = colors[shade];
         drewAPixel = true;
