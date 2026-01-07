@@ -27,10 +27,6 @@ public:
     uint8_t Read(uint16_t address, MemoryAccessor caller = MemoryAccessor::CPU);
     void Write(uint16_t address, uint8_t byteToWrite);
 
-    void setOAMDisabled(const bool setTo) {
-        isOAMDisabledByPPU = setTo;
-    }
-
     void InitializeMemory();
 
     void setMode(PPUMode currentMode) {mode = currentMode;};
@@ -86,7 +82,6 @@ private:
 
     uint8_t bankModeToUse{ROM_MODE};
 
-    bool isOAMDisabledByPPU{};
 
 };
 

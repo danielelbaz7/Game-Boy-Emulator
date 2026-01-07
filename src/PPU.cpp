@@ -7,7 +7,6 @@
 
 PPU::PPU(Memory& m) : mem(m) {
     mem.WriteScanline(currentScanline, MemoryAccessor::PPU);
-    mem.setOAMDisabled(true);
 }
 
 void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
@@ -19,12 +18,10 @@ void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
         nextEmptySlot = 0;
         mem.WriteScanline(currentScanline, MemoryAccessor::PPU);
         TcyclesSinceLastScanline -= 456;
-        mem.setOAMDisabled(false);
         if (currentScanline >= 144) {
             currentMode = PPUMode::VBlank;
         } else {
             currentMode = PPUMode::OAM;
-            mem.setOAMDisabled(true);
         }
     }
 
@@ -39,7 +36,6 @@ void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
             DrawWindow(scanline, bgWindowScanline);
         }
 
-
         if (spritesEnabled()) {
             DrawSprites(scanline, bgWindowScanline);
         }
@@ -50,7 +46,6 @@ void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
             frameBuffer[currentScanline]);
 
         currentMode = PPUMode::HBlank;
-        mem.setOAMDisabled(false);
     }
 
     //if we just hit 80 t cycles and we haven't read OAM yet, now is the time to do that
@@ -97,10 +92,8 @@ void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
             windowLinesWritten = 0;
             mem.WriteScanline(currentScanline, MemoryAccessor::PPU);
             currentMode = PPUMode::OAM;
-            mem.setOAMDisabled(true);
         }
     }
-    mem.setMode(currentMode);
 }
 
 void PPU::DrawBackground(uint32_t *scanline, uint8_t *bgWindowScanline) {

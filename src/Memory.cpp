@@ -246,7 +246,7 @@ void Memory::InitializeMemory() {
     Write(0xFF24, 0x77); // NR50
     Write(0xFF25, 0xF3); // NR51
     Write(0xFF26, 0xF1); // NR52
-    Write(0xFF40, 0x91); // LCDC - LCD on, BG on
+    Write(0xFF40, 0xFF); // LCDC - LCD on, BG on
     Write(0xFF42, 0x00); // SCY
     Write(0xFF43, 0x00); // SCX
     Write(0xFF45, 0x00); // LYC
