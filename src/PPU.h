@@ -36,7 +36,7 @@ private:
     [[nodiscard]] uint8_t spriteHeight() const { return ((Read(0xFF40) & 0x04) >> 2u == 1) ? 16 : 8; }
     //checks bit 3, to tell bg which address to use
     [[nodiscard]] bool LCDCBit3Tilemaps() const { return (((Read(0xFF40) & 0x08) >> 3u) == 1) ? true : false; }
-    [[nodiscard]] bool windowEnabled() const { return ((((Read(0xFF40) & 0x10) >> 4u) == 1) ? true : false); }
+    [[nodiscard]] bool windowEnabled() const { return ((((Read(0xFF40) & 0x20) >> 5u) == 1) ? true : false); }
     [[nodiscard]] uint8_t windowStartY() const { return Read(0xFF4A); }
     [[nodiscard]] uint8_t windowStartX() const { return Read(0xFF4B); }
     //same as lcdcbit3 tilemaps, just for window

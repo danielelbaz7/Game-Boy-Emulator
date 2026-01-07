@@ -34,9 +34,9 @@ void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
         uint8_t bgWindowScanline[160]{};
 
         DrawBackground(scanline, bgWindowScanline);
+
         if (windowEnabled() && currentScanline >= windowStartY()) {
             DrawWindow(scanline, bgWindowScanline);
-            windowLinesWritten++;
         }
 
 
@@ -144,11 +144,12 @@ void PPU::DrawBackground(uint32_t *scanline, uint8_t *bgWindowScanline) {
 
 
 void PPU::DrawWindow(uint32_t *scanline, uint8_t *bgWindowScanline) {
+    bool drewAPixel = false;
     //iterates through every pixel in scanline
     for(uint8_t pixel = 0; pixel < 160; pixel++) {
         //the current x position is offset by 7, so the window starts at 7 less than what is in the register
         //if the window start x is 7, we start drawing at (in our minds) x=0
-        if (pixel < (windowStartX() - 7)) {
+        if (pixel < static_cast<int16_t>(windowStartX() - 7)) {
             continue;
         }
 
@@ -191,6 +192,10 @@ void PPU::DrawWindow(uint32_t *scanline, uint8_t *bgWindowScanline) {
         //then grab the shade this colorID represents from
         uint8_t shade = (Read(0xFF47) & (0x03 << (pixelColor * 2))) >> (pixelColor * 2);
         scanline[pixel] = colors[shade];
+        drewAPixel = true;
+    }
+    if (drewAPixel) {
+        windowLinesWritten++;
     }
 }
 
