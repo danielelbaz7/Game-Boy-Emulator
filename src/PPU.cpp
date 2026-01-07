@@ -12,7 +12,7 @@ PPU::PPU(Memory& m) : mem(m) {
 
 void checkStatInterrupt(uint8_t line) {
     // everytime under currentScanLine++ or change etc
-    // does line (currentScanline) = lyc? (assuming other conditions are met)
+    // does line (currentScanline) = lyc? (assuming other conditions are met (stat reg bit 6 is 1))
     // yes? set IF bit 1 and change bit 2 of stat to 1
     // no ? set bit 2 of stat to 0
     

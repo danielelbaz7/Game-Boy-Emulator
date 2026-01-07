@@ -25,7 +25,7 @@ void Memory::setMode(PPUMode newMode) {
         io[0x0F] = (1u | io[0x0F]); // set bit 0 of IF
     }
 
-    // stat reg check (bit 1) | 4 modes to check
+    // stat reg check (bit 1) | 3 modes to check
     uint8_t statReg = io[0x41];
     bool bit3 = (statReg & 0x08) != 0;
     if (newMode == PPUMode::HBlank && bit3) {
@@ -38,7 +38,8 @@ void Memory::setMode(PPUMode newMode) {
     bool bit5 = (statReg & 0x20) != 0;
     if (newMode == PPUMode::OAM && bit5) {
         io[0x0F] = (2u | io[0x0F]); // set bit 1 of IF
-    }    
+    } 
+    mode = newMode; 
 
     return;
 }
