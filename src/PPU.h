@@ -52,6 +52,7 @@ private:
         uint8_t x;
         uint8_t tile;
         uint8_t flags;
+        uint8_t OAMIndex;
     };
 
     bool SpriteFlagBitValue(const Sprite &s, uint8_t bit) {

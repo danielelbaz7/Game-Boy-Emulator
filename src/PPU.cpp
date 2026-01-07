@@ -63,7 +63,7 @@ void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
             }
 
             Sprite s{Read(firstByte), Read(1 + firstByte),
-            Read(2 + firstByte), Read(3 + firstByte)};
+            Read(2 + firstByte), Read(3 + firstByte), i};
 
             //increment after using
             spriteBuffer[nextEmptySlot++] = s;
@@ -73,6 +73,15 @@ void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
             }
 
         }
+
+        //lambda function to sort the sprite buffer first by the lower x value and if these are the same,
+        //the lower OAM index
+        std::sort(std::begin(spriteBuffer), std::end(spriteBuffer),
+            [](const Sprite &a, const Sprite &b) {
+            if (a.x != b.x) { return a.x < b.x; }
+                return a.OAMIndex < b.OAMIndex;
+        });
+
         currentMode = PPUMode::Draw;
     }
 
@@ -202,12 +211,16 @@ void PPU::DrawSprites(uint32_t *scanline) {
             if (SpriteFlagBitValue(s, 6)) { spriteY = (spriteHeight()-1) - spriteY; }
 
             std::array<uint8_t, 16> tileData;
-            if (spriteY >= 8) {
-                 tileData = mem.ReadTile(s.tile + 1);
+            if (spriteHeight() == 16) {
+                if (spriteY >= 8) {
+                    tileData = mem.ReadTile(s.tile | 0x01);
+                    spriteY -= 8;
+                } else {
+                    tileData = mem.ReadTile(s.tile & 0xFE);
+                }
             } else {
                 tileData = mem.ReadTile(s.tile);
             }
-
 
             uint8_t pixelColor{};
             pixelColor = (tileData[spriteY * 2] & (0x01 << (7-spriteX))) >> (7-spriteX);
@@ -216,11 +229,23 @@ void PPU::DrawSprites(uint32_t *scanline) {
             //if the pixelcolor is 0, its transparent so we skip it
             if (pixelColor == 0) { continue; }
 
+            //s.flags & 0x80 is the priority bit, determines whether sprite gets priority over bg and window
+            //
+            if (s.flags & 0x80) {
+                if (scanline[pixel] == colors[0]) {
+                    uint16_t paletteAddress = SpriteFlagBitValue(s, 4) ? 0xFF49 : 0xFF48;
+                    uint8_t shade = (Read(paletteAddress) & (0x03 << (pixelColor * 2))) >> (pixelColor * 2);
+                    scanline[pixel] = colors[shade];
+                    break;
+                } else {
+                    continue;
+                }
+            }
             //if bit 4 is 1, we use the palette values in FF49, otherwise FF48
-            uint8_t paletteAddress = SpriteFlagBitValue(s, 4) ? 0xFF49 : 0xFF48;
+            uint16_t paletteAddress = SpriteFlagBitValue(s, 4) ? 0xFF49 : 0xFF48;
             uint8_t shade = (Read(paletteAddress) & (0x03 << (pixelColor * 2))) >> (pixelColor * 2);
             scanline[pixel] = colors[shade];
-
+            break;
         }
     }
 }
