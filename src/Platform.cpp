@@ -33,9 +33,35 @@ void Platform::Run() {
     while (!quit) {
 
         if (cpu.stopped) {
+            SDL_Event e;
+            while (SDL_PollEvent(&e)) {
+            switch (e.type) {
+                //quit the program if the user quits the application
+                case SDL_QUIT: {
+                    quit = true;
+                } break;
+
+                case SDL_KEYDOWN: {
+                    switch (e.key.keysym.sym) {
+                        //direction buttons
+                        case SDLK_w: { SetButtonStatusInMemory("up", KeyStatus::Pressed); break; }
+                        case SDLK_a: { SetButtonStatusInMemory("left", KeyStatus::Pressed); break; }
+                        case SDLK_s: { SetButtonStatusInMemory("down", KeyStatus::Pressed); break; }
+                        case SDLK_d: { SetButtonStatusInMemory("right", KeyStatus::Pressed); break; }
+
+                        case SDLK_z: { SetButtonStatusInMemory("a", KeyStatus::Pressed); break; }
+                        case SDLK_x: { SetButtonStatusInMemory("b", KeyStatus::Pressed); break; }
+                        case SDLK_c: { SetButtonStatusInMemory("start", KeyStatus::Pressed); break; }
+                        case SDLK_v: { SetButtonStatusInMemory("select", KeyStatus::Pressed); break; }
+
+                    }
+                    break;
+                }
+            }
+
+        }
             break;
         }
-
 
         //only handles fetch, decode, execute, won't do anything if the gameboy is halted
         //call PPU with the same amount of instructions we used in the CPU
@@ -53,7 +79,7 @@ void Platform::Run() {
         //keyboard mappings: WASD -> D-pad (Direction buttons)
         // A button -> Z, B button -> X, Start -> C, Select -> V
         SDL_Event e;
-        if (SDL_PollEvent(&e)) {
+        while (SDL_PollEvent(&e)) {
             switch (e.type) {
                 //quit the program if the user quits the application
                 case SDL_QUIT: {
@@ -140,6 +166,6 @@ void Platform::SetButtonStatusInMemory(std::string key, KeyStatus status) {
     buttonStatus[key] = status;
 
     if(status == KeyStatus::Pressed && oldStatus == KeyStatus::Released) {
-        mem.SetInputInterrupt();
+        mem.SetJoypadInterrupt();
     }
 }

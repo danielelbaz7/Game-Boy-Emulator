@@ -26,7 +26,7 @@ void Memory::WriteCoincidence(bool LYEqualsLYC) { //sets stat bit 2 (read only) 
     else { io[0x41] &= ~0x04; }
 }
 
-void Memory::SetInputInterrupt() {
+void Memory::SetJoypadInterrupt() {
     io[0x0F] |= 0x10;
 }
 
