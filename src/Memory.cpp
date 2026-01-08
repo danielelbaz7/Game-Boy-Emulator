@@ -31,7 +31,11 @@ void Memory::SetInputInterrupt() {
 }
 
 void Memory::UpdateTIMA(uint16_t oldCounter, uint16_t newCounter) {
-    uint8_t TAC = (io[0x07] & 0x03); // tac register (bits 0 and 1 only)
+    uint8_t TAC = (io[0x07]); // tac register
+    if ((TAC & 0x04) == 0) { // return if timer disabled
+        return;
+    }
+    TAC &= 0x03;
     uint16_t waitTime = TACValues[TAC];
     if((newCounter / waitTime) > (oldCounter / waitTime)) {
         io[0x05]++;
