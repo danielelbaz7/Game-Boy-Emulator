@@ -24,20 +24,12 @@ void PPU::CheckStatInterrupt() {
 void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
     TcyclesSinceLastScanline += TcyclesSinceLastUpdate;
 
-    if (TcyclesSinceLastScanline >= 456 && currentMode == PPUMode::HBlank) {
-        //reset to a new line, subtracting 456 also keeps overflow if it exists
-        currentScanline++;
-        CheckStatInterrupt();
-        nextEmptySlot = 0;
-        mem.WriteScanline(currentScanline, MemoryAccessor::PPU);
-        TcyclesSinceLastScanline -= 456;
-        if (currentScanline >= 144) {
-            currentMode = PPUMode::VBlank;
-            mem.setMode(currentMode);
-        } else {
-            currentMode = PPUMode::OAM;
-            mem.setMode(currentMode);
-        }
+    //if we just hit 80 t cycles and we haven't read OAM yet, now is the time to do that
+    //this takes the first 10 sprites that need to be rendered and places them into the internal sprite buffer
+    if (TcyclesSinceLastScanline >= 80 && currentMode == PPUMode::OAM) {
+        ScanOAM();
+        currentMode = PPUMode::Draw;
+        mem.setMode(currentMode);
     }
 
     //252 = 80 + 172
@@ -64,49 +56,31 @@ void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
         mem.setMode(currentMode);
     }
 
-    //if we just hit 80 t cycles and we haven't read OAM yet, now is the time to do that
-    //this takes the first 10 sprites that need to be rendered and places them into the internal sprite buffer
-    else if (TcyclesSinceLastScanline >= 80 && currentMode == PPUMode::OAM) {
-        for (uint8_t i = 0; i < totalSprites; i++) {
-            //times 4 since there are 4 bytes per sprite, 40 sprites total
-            uint16_t firstByte = OAMStartAddress + i*bytesPerSprite;
-            uint8_t curSpriteYValue = Read(firstByte);
-            if (currentScanline < (curSpriteYValue - 16) ||
-                currentScanline >= (curSpriteYValue - 16 + spriteHeight())) {
-                continue;
-            }
-
-            Sprite s{Read(firstByte), Read(1 + firstByte),
-            Read(2 + firstByte), Read(3 + firstByte), i};
-
-            //increment after using
-            spriteBuffer[nextEmptySlot++] = s;
-
-            if (nextEmptySlot >= 10) {
-                break;
-            }
-
+    else if (TcyclesSinceLastScanline >= 456 && currentMode == PPUMode::HBlank) {
+        //reset to a new line, subtracting 456 also keeps overflow if it exists
+        currentScanline++;
+        CheckStatInterrupt();
+        nextEmptySlot = 0;
+        mem.WriteScanline(currentScanline, MemoryAccessor::PPU);
+        TcyclesSinceLastScanline -= 456;
+        if (currentScanline >= 144) {
+            currentMode = PPUMode::VBlank;
+            mem.setMode(currentMode);
+        } else {
+            currentMode = PPUMode::OAM;
+            mem.setMode(currentMode);
         }
-
-        //lambda function to sort the sprite buffer first by the lower x value and if these are the same,
-        //the lower OAM index
-        std::sort(std::begin(spriteBuffer), std::begin(spriteBuffer) + nextEmptySlot,
-            [](const Sprite &a, const Sprite &b) {
-            if (a.x != b.x) { return a.x < b.x; }
-                return a.OAMIndex < b.OAMIndex;
-        });
-
-        currentMode = PPUMode::Draw;
-        mem.setMode(currentMode);
     }
 
     else if (TcyclesSinceLastScanline >= 456 && currentMode == PPUMode::VBlank) {
         currentScanline++;
+        mem.WriteScanline(currentScanline, MemoryAccessor::PPU);
         CheckStatInterrupt();
         nextEmptySlot = 0;
         TcyclesSinceLastScanline -= 456;
         if (currentScanline >= 154) {
             currentScanline = 0;
+            CheckStatInterrupt();
             windowLinesWritten = 0;
             mem.WriteScanline(currentScanline, MemoryAccessor::PPU);
             currentMode = PPUMode::OAM;
@@ -116,8 +90,40 @@ void PPU::UpdatePPU(uint8_t TcyclesSinceLastUpdate) {
     // update the mode in memory | used for mem blocking and interrupts
 }
 
+void PPU::ScanOAM() {
+    for (uint8_t i = 0; i < totalSprites; i++) {
+        //times 4 since there are 4 bytes per sprite, 40 sprites total
+        uint16_t firstByte = OAMStartAddress + i*bytesPerSprite;
+        uint8_t curSpriteYValue = Read(firstByte);
+        if (currentScanline < (curSpriteYValue - 16) ||
+            currentScanline >= (curSpriteYValue - 16 + spriteHeight())) {
+            continue;
+            }
+
+        Sprite s{Read(firstByte), Read(1 + firstByte),
+        Read(2 + firstByte), Read(3 + firstByte), i};
+
+        //increment after using
+        spriteBuffer[nextEmptySlot++] = s;
+
+        if (nextEmptySlot >= 10) {
+            break;
+        }
+
+    }
+
+    //lambda function to sort the sprite buffer first by the lower x value and if these are the same,
+    //the lower OAM index
+    std::sort(std::begin(spriteBuffer), std::begin(spriteBuffer) + nextEmptySlot,
+        [](const Sprite &a, const Sprite &b) {
+        if (a.x != b.x) { return a.x < b.x; }
+            return a.OAMIndex < b.OAMIndex;
+    });
+
+}
+
 void PPU::DrawBackground(uint32_t *scanline, uint8_t *bgWindowScanline) {
-    if (!backgroundEnabled()) {
+    if (!LCDCBit0BGWinEnabled()) {
         uint8_t color0 = Read(0xFF47) & 0x03;
         for(uint8_t pixel = 0; pixel < 160; pixel++) {
             scanline[pixel] = colors[color0];
@@ -166,14 +172,20 @@ void PPU::DrawBackground(uint32_t *scanline, uint8_t *bgWindowScanline) {
 
 void PPU::DrawWindow(uint32_t *scanline, uint8_t *bgWindowScanline) {
     bool drewAPixel = false;
-    if (!backgroundEnabled()) {
-
+    if (!LCDCBit0BGWinEnabled()) {
+        uint8_t color0 = Read(0xFF47) & 0x03;
+        for(uint8_t pixel = 0; pixel < 160; pixel++) {
+            scanline[pixel] = colors[color0];
+        }
+        return;
     }
+
     //iterates through every pixel in scanline
     for(uint8_t pixel = 0; pixel < 160; pixel++) {
         //the current x position is offset by 7, so the window starts at 7 less than what is in the register
         //if the window start x is 7, we start drawing at (in our minds) x=0
-        if (pixel < static_cast<int16_t>(windowStartX() - 7)) {
+        //if window start is less than 7, don't render anything for this pixel
+        if (windowStartX() < 7 | pixel < (windowStartX() - 7)) {
             continue;
         }
 

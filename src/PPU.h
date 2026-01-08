@@ -27,12 +27,13 @@ private:
     uint8_t currentScanline{}; //goes from 0-153, last 10 are vblank
     uint8_t windowLinesWritten{};
 
+    void ScanOAM();
     void DrawBackground(uint32_t *scanline, uint8_t *bgWindowScanline);
     void DrawWindow(uint32_t *scanline, uint8_t *bgWindowScanline);
     void DrawSprites(uint32_t *scanline, uint8_t *bgWindowScanline);
     void CheckStatInterrupt();
 
-    [[nodiscard]] bool backgroundEnabled() const { return ((((Read(0xFF40) & 0x01)) == 1) ? true : false); }
+    [[nodiscard]] bool LCDCBit0BGWinEnabled() const { return ((((Read(0xFF40) & 0x01)) == 1) ? true : false); }
     [[nodiscard]] bool spritesEnabled() const { return ((((Read(0xFF40) & 0x02) >> 1u) == 1) ? true : false); }
     //lambda function that returns the current sprite height at any point
     [[nodiscard]] uint8_t spriteHeight() const { return ((Read(0xFF40) & 0x04) >> 2u == 1) ? 16 : 8; }
