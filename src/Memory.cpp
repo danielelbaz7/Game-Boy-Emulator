@@ -171,7 +171,7 @@ uint8_t Memory::Read(uint16_t address, MemoryAccessor caller) {
     }
 
     if (address <= 0xFF7F) {
-        if(address = 0xFF04) {
+        if(address == 0xFF04) {
             return internalCounter >> 8u;
         }
         //io port
@@ -312,6 +312,16 @@ void Memory::LoadRom(char const* filename) {
         file.seekg(0, std::ios::beg);
         rom.resize(filesize);
         file.read(reinterpret_cast<char*>(rom.data()), filesize);
+    }
+    //resize the external ram based on the size stored in rom[0x149]
+    switch (rom[0x149]) {
+        case 0x00: eRam.resize(0);
+        case 0x01: eRam.resize(0);
+        case 0x02: eRam.resize(0x2000);
+        case 0x03: eRam.resize(0x8000);
+        case 0x04: eRam.resize(0x20000);
+        case 0x05: eRam.resize(0x10000);
+        default: eRam.resize(0);
     }
 }
 
