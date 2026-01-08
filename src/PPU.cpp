@@ -185,7 +185,7 @@ void PPU::DrawWindow(uint32_t *scanline, uint8_t *bgWindowScanline) {
         //the current x position is offset by 7, so the window starts at 7 less than what is in the register
         //if the window start x is 7, we start drawing at (in our minds) x=0
         //if window start is less than 7, don't render anything for this pixel
-        if (windowStartX() < 7 | pixel < (windowStartX() - 7)) {
+        if (windowStartX() < 7 || pixel < (windowStartX() - 7)) {
             continue;
         }
 

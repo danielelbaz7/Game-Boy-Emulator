@@ -88,7 +88,6 @@ bool CPU::handleInterrupts() {
 
 // Step function, executes exactly one instruction
 uint8_t CPU::Step() {
-
     if (handleInterrupts()) {
         return 5 * dotsPerMCycle;
     }
@@ -96,13 +95,6 @@ uint8_t CPU::Step() {
     if (halted) {
         return 1 * dotsPerMCycle;
     }
-    // std::cout << "pc=" << std::hex << std::setw(4) << std::setfill('0') << (pc)
-    //       << " val=" << std::setw(2) << (int)read(pc)
-    //         << (" ")
-    //         << std::setw(2) << (int)read(pc+1)
-    //         << (" ")
-    //         << std::setw(2) << (int)read(pc+2)
-    //       << std::dec << "\n";
 
     // get opcode
     // decode and run opcode function
@@ -120,6 +112,8 @@ uint8_t CPU::Step() {
     }
     //always increment after, we built it to expect this
     pc++;
+
+    uint8_t TcyclesUsed = cycleCount * dotsPerMCycle;
     return cycleCount * dotsPerMCycle;
 }
 

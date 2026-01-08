@@ -26,6 +26,11 @@ void Memory::WriteCoincidence(bool LYEqualsLYC) { //sets stat bit 2 (read only) 
     else { io[0x41] &= ~0x04; }
 };
 
+void Memory::UpdateCounter(uint8_t Tcycles) {
+    internalCounter += Tcycles;
+    return;
+}
+
 //io[0x0F] = 0xFF0F which is the IF register
 void Memory::setMode(PPUMode newMode) {
     // check current mode to handle setting interrupts
@@ -150,6 +155,9 @@ uint8_t Memory::Read(uint16_t address, MemoryAccessor caller) {
     }
 
     if (address <= 0xFF7F) {
+        if(address = 0xFF04) {
+            return internalCounter >> 8u;
+        }
         //io port
         return io[address - 0xFF00];
     }
@@ -256,6 +264,10 @@ void Memory::Write(uint16_t address, uint8_t byteToWrite, MemoryAccessor caller)
     }
 
     if (address <= 0xFF7F) {
+        if (address == 0xFF04) {
+            internalCounter = 0; // when DIV/internalCounter is written to, set to 0
+            return;
+        }
         io[address - 0xFF00] = byteToWrite;
         return;
     }

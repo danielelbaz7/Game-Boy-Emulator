@@ -40,6 +40,7 @@ void Platform::Run() {
         //call PPU with the same amount of instructions we used in the CPU
         uint8_t TcyclesUsedThisInstr = cpu.Step();
         ppu.UpdatePPU(TcyclesUsedThisInstr);
+        mem.UpdateCounter(TcyclesUsedThisInstr);
         cyclesUsed += TcyclesUsedThisInstr;
 
         if (cyclesUsed < TcyclesPerFrame) {

@@ -19,19 +19,17 @@ enum class MemoryAccessor { CPU, PPU };
 class Memory {
 public:
     void LoadRom(char const* filename);
-
-    void WriteScanline(uint8_t value, MemoryAccessor caller);
-
-    std::array<uint8_t, 16> ReadTile(uint8_t tileID, MemoryAccessor caller = MemoryAccessor::PPU);
-    std::array<uint8_t, 16> ReadSpriteTile(uint8_t tileID, MemoryAccessor caller = MemoryAccessor::PPU);
-
-    uint8_t Read(uint16_t address, MemoryAccessor caller = MemoryAccessor::CPU);
-    void Write(uint16_t address, uint8_t byteToWrite, MemoryAccessor caller = MemoryAccessor::CPU);
-
     void InitializeMemory();
 
+    void WriteScanline(uint8_t value, MemoryAccessor caller);
+    std::array<uint8_t, 16> ReadTile(uint8_t tileID, MemoryAccessor caller = MemoryAccessor::PPU);
+    std::array<uint8_t, 16> ReadSpriteTile(uint8_t tileID, MemoryAccessor caller = MemoryAccessor::PPU);
+    uint8_t Read(uint16_t address, MemoryAccessor caller = MemoryAccessor::CPU);
+    void Write(uint16_t address, uint8_t byteToWrite, MemoryAccessor caller = MemoryAccessor::CPU);
     void setMode(PPUMode newMode);
     void WriteCoincidence(bool LYEqualsLYC);
+    void UpdateCounter(uint8_t TcyclesSinceLastInstr);
+    
 
 private:
     // set to default mode (VBlank)
@@ -84,6 +82,10 @@ private:
     const uint8_t RAM_MODE = 1;
 
     uint8_t bankModeToUse{ROM_MODE};
+
+    
+    uint16_t internalCounter{};
+
 
 
 };

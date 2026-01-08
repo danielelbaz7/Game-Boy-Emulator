@@ -67,8 +67,6 @@ private:
     // can be changed to read in the function | might be slower tho
     bool checkInterrupt(uint8_t IF, uint8_t IE, int bitToCheck);
 
-
-
     uint16_t sp{0xFFFE}; //stack pointer, initialized to highest bit of high ram
     uint16_t pc{0x0100}; //program counter
 
