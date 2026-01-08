@@ -27,7 +27,7 @@ void Memory::WriteCoincidence(bool LYEqualsLYC) { //sets stat bit 2 (read only) 
 }
 
 void Memory::SetInputInterrupt() {
-    io[0x41] |= 0x10;
+    io[0x0F] |= 0x10;
 }
 
 void Memory::UpdateTIMA(uint16_t oldCounter, uint16_t newCounter) {
@@ -284,7 +284,8 @@ void Memory::Write(uint16_t address, uint8_t byteToWrite, MemoryAccessor caller)
 
     if (address <= 0xFF7F) {
         if (address == 0xFF00) {
-            selectedGroup == byteToWrite & 0x30;
+            selectedGroup = byteToWrite & 0x30;
+            return;
         }
         if (address == 0xFF04) {
             internalCounter = 0; // when DIV/internalCounter is written to, set to 0
@@ -371,8 +372,8 @@ void Memory::InitializeMemory() {
 uint8_t Memory::SetJoypadBits() {
     //begin with the selected group data plus the first 4 bits unpressed
     uint8_t baseValue = selectedGroup | 0x0F;
-    //if bit 4 is 0, that means action buttons are selected (could be both, but at least direction)
-    if ((baseValue & 0x20) == 0) {
+    //if bit 5 is 0, that means action buttons are selected (could be both, but at least direction)
+    if ((selectedGroup & 0x20) == 0) {
         //set each pressed button to 0 on the register
         if (buttonStatus->at("a") == KeyStatus::Pressed) {
             baseValue &= ~0x01;
@@ -383,12 +384,12 @@ uint8_t Memory::SetJoypadBits() {
         if (buttonStatus->at("select") == KeyStatus::Pressed) {
             baseValue &= ~0x04;
         }
-        if (buttonStatus->at("select") == KeyStatus::Pressed) {
+        if (buttonStatus->at("start") == KeyStatus::Pressed) {
             baseValue &= ~0x08;
         }
     }
     //this is for direction buttons
-    if ((baseValue & 0x10) == 0) {
+    if ((selectedGroup & 0x10) == 0) {
         //set each pressed button to 0 on the register
         if (buttonStatus->at("right") == KeyStatus::Pressed) {
             baseValue &= ~0x01;

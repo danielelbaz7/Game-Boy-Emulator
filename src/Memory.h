@@ -94,7 +94,7 @@ private:
 
     uint8_t selectedGroup{0x30}; // 0x30 means no group selected, 0x20 is direction (WASD)
     //0x10 is action buttons, 0x00 is both groups selected
-    const std::unordered_map<std::string, KeyStatus> *buttonStatus;
+    std::unordered_map<std::string, KeyStatus> *buttonStatus = nullptr;
     uint8_t SetJoypadBits();
 
 };

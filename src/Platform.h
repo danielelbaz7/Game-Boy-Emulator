@@ -38,9 +38,7 @@ private:
     {{"up", KeyStatus::Released}, {"down", KeyStatus::Released}, {"left", KeyStatus::Released},
         {"right", KeyStatus::Released}, {"a", KeyStatus::Released}, {"b", KeyStatus::Released},
         {"select", KeyStatus::Released}, {"start", KeyStatus::Released}};
-    
-    std::unordered_map<std::string, std::string> keysToButtons = 
-    {{"W", "up"}, {"S", "down"}, {"A", "left"}, {"D", "right"}, {"Z", "a"}, {"X", "b"}, {"C", "select"}, {"V", "start"}};
+
     
     void SetButtonStatusInMemory(std::string key, KeyStatus status);
 };

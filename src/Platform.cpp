@@ -16,6 +16,7 @@ Platform::Platform(const char* filename)
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     mem.InitializeMemory();
     mem.LoadRom(filename);
+    mem.SetButtonStatus(buttonStatus);
 }
 
 //overall run, manages input, interrupts, etc.
@@ -62,33 +63,35 @@ void Platform::Run() {
                 case SDL_KEYDOWN: {
                     switch (e.key.keysym.sym) {
                         //direction buttons
-                        case SDLK_w: { SetButtonStatusInMemory("W", KeyStatus::Pressed); break; }
-                        case SDLK_a: { SetButtonStatusInMemory("A", KeyStatus::Pressed); break; }
-                        case SDLK_s: { SetButtonStatusInMemory("S", KeyStatus::Pressed); break; }
-                        case SDLK_d: { SetButtonStatusInMemory("D", KeyStatus::Pressed); break; }
+                        case SDLK_w: { SetButtonStatusInMemory("up", KeyStatus::Pressed); break; }
+                        case SDLK_a: { SetButtonStatusInMemory("left", KeyStatus::Pressed); break; }
+                        case SDLK_s: { SetButtonStatusInMemory("down", KeyStatus::Pressed); break; }
+                        case SDLK_d: { SetButtonStatusInMemory("right", KeyStatus::Pressed); break; }
 
-                        case SDLK_z: { SetButtonStatusInMemory("Z", KeyStatus::Pressed); break; }
-                        case SDLK_x: { SetButtonStatusInMemory("X", KeyStatus::Pressed); break; }
-                        case SDLK_c: { SetButtonStatusInMemory("C", KeyStatus::Pressed); break; }
-                        case SDLK_v: { SetButtonStatusInMemory("V", KeyStatus::Pressed); break; }
+                        case SDLK_z: { SetButtonStatusInMemory("a", KeyStatus::Pressed); break; }
+                        case SDLK_x: { SetButtonStatusInMemory("b", KeyStatus::Pressed); break; }
+                        case SDLK_c: { SetButtonStatusInMemory("start", KeyStatus::Pressed); break; }
+                        case SDLK_v: { SetButtonStatusInMemory("select", KeyStatus::Pressed); break; }
 
                     }
+                    break;
                 }
 
                 case SDL_KEYUP: {
                     switch (e.key.keysym.sym) {
                         //direction buttons
-                        case SDLK_w: { SetButtonStatusInMemory("W", KeyStatus::Released); break; }
-                        case SDLK_a: { SetButtonStatusInMemory("A", KeyStatus::Released); break; }
-                        case SDLK_s: { SetButtonStatusInMemory("S", KeyStatus::Released); break; }
-                        case SDLK_d: { SetButtonStatusInMemory("D", KeyStatus::Released); break; }
+                        case SDLK_w: { SetButtonStatusInMemory("up", KeyStatus::Released); break; }
+                        case SDLK_a: { SetButtonStatusInMemory("left", KeyStatus::Released); break; }
+                        case SDLK_s: { SetButtonStatusInMemory("down", KeyStatus::Released); break; }
+                        case SDLK_d: { SetButtonStatusInMemory("right", KeyStatus::Released); break; }
 
-                        case SDLK_z: { SetButtonStatusInMemory("Z", KeyStatus::Released); break; }
-                        case SDLK_x: { SetButtonStatusInMemory("X", KeyStatus::Released); break; }
-                        case SDLK_c: { SetButtonStatusInMemory("C", KeyStatus::Released); break; }
-                        case SDLK_v: { SetButtonStatusInMemory("V", KeyStatus::Released); break; }
+                        case SDLK_z: { SetButtonStatusInMemory("a", KeyStatus::Released); break; }
+                        case SDLK_x: { SetButtonStatusInMemory("b", KeyStatus::Released); break; }
+                        case SDLK_c: { SetButtonStatusInMemory("start", KeyStatus::Released); break; }
+                        case SDLK_v: { SetButtonStatusInMemory("select", KeyStatus::Released); break; }
 
                     }
+                    break;
                 }
             }
 
@@ -132,9 +135,9 @@ void Platform::DrawFramebuffer(uint32_t *frameBuffer, uint16_t colCount) {
 }
 
 void Platform::SetButtonStatusInMemory(std::string key, KeyStatus status) {
-    KeyStatus oldStatus = buttonStatus[keysToButtons[key]];
+    KeyStatus oldStatus = buttonStatus[key];
     //set the new status
-    buttonStatus[keysToButtons[key]] = status;
+    buttonStatus[key] = status;
 
     if(status == KeyStatus::Pressed && oldStatus == KeyStatus::Released) {
         mem.SetInputInterrupt();
