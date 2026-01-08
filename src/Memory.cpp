@@ -291,6 +291,16 @@ void Memory::Write(uint16_t address, uint8_t byteToWrite, MemoryAccessor caller)
             internalCounter = 0; // when DIV/internalCounter is written to, set to 0
             return;
         }
+        if (address == 0xFF46) {
+            //the byte to write is the upper 2 bytes of the source addresses
+            //destination is always FE00-FE9F
+            uint16_t sourceAddress{static_cast<uint16_t>((byteToWrite) << 8u)};
+            uint16_t destinationAddress{0xFE00};
+            //iterate through every byte we are transferring and copy it
+            for (int i = 0; i < 160; i++) {
+                Write(destinationAddress + i, Read(sourceAddress + i));
+            }
+        }
         io[address - 0xFF00] = byteToWrite;
         return;
     }
