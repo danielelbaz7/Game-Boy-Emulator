@@ -50,8 +50,8 @@ void Memory::setMode(PPUMode newMode) {
     bool bit5 = (statReg & 0x20) != 0;
     if (newMode == PPUMode::OAM && bit5) {
         io[0x0F] = (0x02 | io[0x0F]); // set bit 1 of IF
-    } 
-    mode = newMode; 
+    }
+    mode = newMode;
 
     return;
 }
@@ -94,6 +94,11 @@ void Memory::WriteScanline(uint8_t value, MemoryAccessor caller) {
 }
 
 uint8_t Memory::Read(uint16_t address, MemoryAccessor caller) {
+    //always returning no buttons pressed when reading, this is for debugging
+    if (address == 0xFF00) {
+        return 0xFF;
+    }
+
     if (address <= 0x3FFF) {
         return rom[address];
     }
@@ -105,7 +110,7 @@ uint8_t Memory::Read(uint16_t address, MemoryAccessor caller) {
     }
 
     if (address <= 0x9FFF) {
-        
+
         //disable during draw phase for cpu
         // LCD must be ON
         if (isLcdOn() && mode == PPUMode::Draw && caller == MemoryAccessor::CPU) {
@@ -187,7 +192,7 @@ void Memory::Write(uint16_t address, uint8_t byteToWrite, MemoryAccessor caller)
         currentRomWindow = (currentRomWindow & ~0x1Fu) | lower5Bits;
         return;
     }
-    
+
     if (address <= 0x5FFF) {
         if(bankModeToUse == ROM_MODE) {
             //set bits 5 and 6 to the two bits in the register, then shift left so its bits 5 and 6
@@ -218,7 +223,7 @@ void Memory::Write(uint16_t address, uint8_t byteToWrite, MemoryAccessor caller)
         vram[address - 0x8000] = byteToWrite;
         return;
     }
-    
+
     if (address <= 0xBFFF) {
         //if the cartridge has no ram, the external ram is just disabled by default and should never modified
         if(eRamEnabled) {
@@ -251,6 +256,9 @@ void Memory::Write(uint16_t address, uint8_t byteToWrite, MemoryAccessor caller)
     }
 
     if (address <= 0xFF7F) {
+        if (address == 0xFF46) {
+            std::copy(std::begin(wram), std::begin(wram) + 160, oam);
+        }
         io[address - 0xFF00] = byteToWrite;
         return;
     }
@@ -259,7 +267,7 @@ void Memory::Write(uint16_t address, uint8_t byteToWrite, MemoryAccessor caller)
         hram[address - 0xFF80] = byteToWrite;
         return;
     }
-    
+
     if (address == 0xFFFF) {
         ieReg = byteToWrite;
         return;
@@ -317,5 +325,3 @@ void Memory::InitializeMemory() {
     Write(0xFF4B, 0x00); // WX
     Write(0xFFFF, 0x00); // IE
 }
-
-#include "Memory.h"

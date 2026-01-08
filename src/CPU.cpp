@@ -77,7 +77,7 @@ bool CPU::handleInterrupts() {
         return true;
     }
     if (checkInterrupt(IF, IE, 4)) {
-        // handle fleshlight jump and reset bit 4
+        // handle joypad jump and reset bit 4
         pc = 0x0060;
         mem.Write(0xFF0F, (IF & 0xEF));
         return true;
