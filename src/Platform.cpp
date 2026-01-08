@@ -55,6 +55,7 @@ void Platform::Run() {
         if (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT)
                 quit = true;
+
         }
 
         //render last so we account for the time it takes to render in our frametime waiter
@@ -95,9 +96,9 @@ void Platform::DrawFramebuffer(uint32_t *frameBuffer, uint16_t colCount) {
 }
 
 void Platform::SetButtonStatus(std::string key, KeyStatus status) {
-    KeyStatus oldStatus = buttonStatus[keysToButtons[key]] ? KeyStatus::Pressed : KeyStatus::Released;
+    KeyStatus oldStatus = buttonStatus[keysToButtons[key]];
     //set the new status
-    buttonStatus[keysToButtons[key]] = (status == KeyStatus::Pressed);
+    buttonStatus[keysToButtons[key]] = KeyStatus::Pressed;
 
     if(status == KeyStatus::Pressed && oldStatus == KeyStatus::Released) {
         mem.SetInputInterrupt();
