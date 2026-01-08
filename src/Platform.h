@@ -12,6 +12,8 @@
 
 #include "PPU.h"
 
+enum class KeyStatus : bool { Pressed = false, Released = true };
+
 //the platform class holds the actual entire computer's logic, pulling from cpu, ppu, etc.
 class Platform {
 public:
@@ -38,12 +40,7 @@ private:
     
     std::unordered_map<std::string, std::string> keysToButtons = 
     {{"W", "up"}, {"S", "down"}, {"A", "left"}, {"D", "right"}, {"Z", "a"}, {"X", "b"}, {"C", "start"}, {"V", "select"}};
-
-    enum class KeyStatus : bool {
-        PRESSED = false,
-        RELEASED = true
-    };
-
+    
     void SetButtonStatus(std::string key, KeyStatus status);
 };
 

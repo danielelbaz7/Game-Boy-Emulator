@@ -121,6 +121,13 @@ void Memory::WriteScanline(uint8_t value, MemoryAccessor caller) {
 uint8_t Memory::Read(uint16_t address, MemoryAccessor caller) {
     //always returning no buttons pressed when reading, this is for debugging
     if (address == 0xFF00) {
+
+        uint8_t inputReg = io[0];
+        if ((0x20 & inputReg) == 0) {
+            if (buttonStatus["a"] == KeyMode::Pressed ) {
+                io[0]
+            }
+        }
         return 0xFF;
     }
 

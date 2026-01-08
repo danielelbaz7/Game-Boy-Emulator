@@ -6,6 +6,7 @@
 #include <vector>
 #include <array>
 #include <cstdint>
+#include <unordered_map>
 
 enum class PPUMode : uint8_t {
     HBlank = 0,
@@ -31,6 +32,7 @@ public:
     void UpdateCounter(uint8_t TcyclesSinceLastInstr);
     void UpdateTIMA(uint16_t oldCounter, uint16_t newCounter);
     void SetInputInterrupt();
+    void SetButtonStatus(std::unordered_map<std::string, bool> &buttonStatusRef) { buttonStatus = buttonStatusRef; };
     
 
 private:
@@ -89,7 +91,7 @@ private:
 
     uint16_t TACValues[4]{1024, 16, 64, 256};
 
-
+    const std::unordered_map<std::string, bool> *buttonStatus;
 
 };
 
