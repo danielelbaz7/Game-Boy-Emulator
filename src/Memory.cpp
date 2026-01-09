@@ -225,6 +225,9 @@ void Memory::Write(uint16_t address, uint8_t byteToWrite, MemoryAccessor caller)
     //handles eram disable/enable
     if (address == 0xFF02 && ((byteToWrite == 0x81))) {
         std::cout << Read(0xFF01) << std::flush;
+        //if the game boy writes 0x81 to 0xFF02, we need to mark the serial transfer done instantly
+        //since we don't actually have multiplayer, then set the serial interrupt to occur
+        io[0x0F] |= 0x08;
     }
     if (address <= 0x1FFF) {
         //takes only the lower 4 bits of the byte we are writing
