@@ -4,8 +4,10 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "C:/sdl2/SDL2-2.30.10/x86_64-w64-mingw32/include/SDL2",
-                "C:/SDL2/SDL2-2.30.10/x86_64-w64-mingw32/include"
+                "C:/SDL2/SDL2-2.30.10/x86_64-w64-mingw32/include",
+                "C:/SDL2/SDL2-2.30.10/x86_64-w64-mingw32/include/SDL2",
+                "C:/SDL2/SDL2_ttf-2.22.0/x86_64-w64-mingw32/include",
+                "C:/SDL2/SDL2_ttf-2.22.0/x86_64-w64-mingw32/include/SDL2"
             ],
             "defines": [],
             "windowsSdkVersion": "10.0.19041.0",

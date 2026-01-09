@@ -14,11 +14,18 @@ int main(int argc, char* argv[]) {
     if (argc < 2) {
         // std::cerr << "You have the wrong number of arguments!";
         // // change to call launcher
-        Launcher launcher;
-        arguments runInfo = launcher.Run();
+        arguments runInfo;
+        {
+            Launcher launcher;
+            runInfo = launcher.Run();
+        } // launcher closes
+        if (runInfo.romPath == "") {
+            std::cerr << "No ROM file selected\n";
+            return -1;
+        }
         Platform platform(runInfo.romPath.c_str(), runInfo.savePath.c_str());
         platform.Run();
-        return 1;
+        return 0;;
 
     }
     const char* ROMFilename = argv[1];
