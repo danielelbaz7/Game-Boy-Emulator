@@ -26,7 +26,7 @@ Makefile
 # ROM files (if you don't want to commit test ROMs)
 *.gb
 *.gbc
-
+*.sav
 # OS files
 .DS_Store
 Thumbs.db

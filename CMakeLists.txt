@@ -32,6 +32,8 @@ add_executable(GameBoyEmulator
         src/PPU.h
         src/Memory.cpp
         src/Memory.h
+        src/Launcher.cpp
+        src/Launcher.h
 )
 
 target_include_directories(GameBoyEmulator PRIVATE ${SDL2_INCLUDE_DIR})
