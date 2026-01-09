@@ -15,8 +15,10 @@ int main(int argc, char* argv[]) {
         // std::cerr << "You have the wrong number of arguments!";
         // // change to call launcher
         Launcher launcher;
-        launcher.Run();
-        //return 1;
+        arguments runInfo = launcher.Run();
+        Platform platform(runInfo.romPath.c_str(), runInfo.savePath.c_str());
+        platform.Run();
+        return 1;
 
     }
     const char* ROMFilename = argv[1];

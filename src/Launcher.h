@@ -11,6 +11,9 @@ struct arguments {
 
 class Launcher {
 
+    bool IsClickInRect(int x, int y, SDL_Rect& rect);
+
+    std::string OpenFileDialog(const char* filter);
 
 public:
 
