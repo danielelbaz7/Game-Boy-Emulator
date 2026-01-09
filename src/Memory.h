@@ -97,6 +97,9 @@ private:
     std::unordered_map<std::string, KeyStatus> *buttonStatus = nullptr;
     uint8_t SetJoypadBits();
 
+    uint8_t MBC{1};
+    bool RTCRegisterMapped = false;
+
 };
 
 

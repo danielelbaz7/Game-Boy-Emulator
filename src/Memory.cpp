@@ -146,7 +146,27 @@ uint8_t Memory::Read(uint16_t address, MemoryAccessor caller) {
 
     if (address <= 0xBFFF) {
         //return the value in external ram only if eRam is enabled
-        return eRamEnabled ? eRam[(currentERamWindow * 0x2000) + (address - 0xA000)] : 0xFF;
+        //if mbc 1 or mbc 3 and real time clock register is not mapped. if rtc register is mapped, return 0x00
+        //since we have not implemented a real time clock
+        if (MBC == 1) {
+            return eRamEnabled ? eRam[(currentERamWindow * 0x2000) + (address - 0xA000)] : 0xFF;
+        } else if (MBC == 3) {
+            if (!eRamEnabled) {
+                return 0xFF;
+            }
+            if (currentERamWindow <= 0x03) {
+                // if we are in one of the 0-3 (4) ram banks, return the ram there
+                return eRam[(currentERamWindow * 0x2000) + (address - 0xA000)];
+            }
+            //otherwise, returning the RTC register which is 0 since we don't implement it
+            else if (currentERamWindow >= 0x08 && currentERamWindow <= 0x0C) {
+                return 0x00;
+            }
+            else {
+                //return high if nothing else
+                return 0xFF;
+            }
+        }
     }
 
     if (address <= 0xDFFF) {
@@ -219,33 +239,51 @@ void Memory::Write(uint16_t address, uint8_t byteToWrite, MemoryAccessor caller)
     }
     // handles rom bank switching & validation
     if (address <= 0x3FFF) {
-        uint8_t lower5Bits = (byteToWrite & 0x1F);
-        //if we are selecting bank 0, we actually select bank 1
-        if (lower5Bits == 0x00) {
-            lower5Bits = 0x01;
+        if (MBC == 1) {
+            uint8_t lower5Bits = (byteToWrite & 0x1F);
+            //if we are selecting bank 0, we actually select bank 1
+            if (lower5Bits == 0x00) {
+                lower5Bits = 0x01;
+            }
+            if (lower5Bits == 0x20 || lower5Bits == 0x40 || lower5Bits == 0x60) {
+                lower5Bits++;
+            }
+            currentRomWindow = (currentRomWindow & 0x60u) | lower5Bits;
+        } else {
+            //this only happens if we are in MBC 3, then we just write the whole 7 bits to be the rom window
+            currentRomWindow = (byteToWrite & 0x7F);
         }
-        currentRomWindow = (currentRomWindow & 0x60u) | lower5Bits;
         return;
     }
 
     if (address <= 0x5FFF) {
-        if(bankModeToUse == ROM_MODE) {
-            //set bits 5 and 6 to the two bits in the register, then shift left so its bits 5 and 6
-            uint8_t romBankToUse = ((byteToWrite & 0x03) << 5u);
-            currentRomWindow = (currentRomWindow & ~0x60u) | romBankToUse;
+        if (MBC == 1) {
+            //can be used to select a RAM bank in range 00-03h, or to specify upper 2 bits of rom bank number
+            if(bankModeToUse == ROM_MODE) {
+                //set bits 5 and 6 to the two bits in the register, then shift left so its bits 5 and 6
+                uint8_t romBankToUse = ((byteToWrite & 0x03) << 5u);
+                currentRomWindow = (currentRomWindow & ~0x60u) | romBankToUse;
+            } else {
+                //set the ram window to the 2 bits in this register
+                uint8_t ramBankToUse = (byteToWrite & 0x03);
+                currentERamWindow = (currentERamWindow & ~0x03u) | ramBankToUse;
+            }
         } else {
-            //set the ram window to the 2 bits in this register
-            uint8_t ramBankToUse = (byteToWrite & 0x03);
-            currentERamWindow = (currentERamWindow & ~0x03u) | ramBankToUse;
+            //if MBC is 3, we set the current eRAM window to the byte to rwite
+            currentERamWindow = byteToWrite;
         }
         return;
     }
 
     //decide whether we are using rom or ram mode
     if (address <= 0x7FFF) {
-        uint8_t lower4Bits = (byteToWrite & 0x0F);
-        //ram mode is 1, rom mode is 0
-        lower4Bits == RAM_MODE ? bankModeToUse = RAM_MODE : bankModeToUse = ROM_MODE;
+        //only set the bank mode to use (which determines how we view some bits inside of the bank number)
+        //if we are in mbc 1. mbc 3 doesn't need this,
+        if (MBC == 1) {
+            uint8_t lower4Bits = (byteToWrite & 0x0F);
+            //ram mode is 1, rom mode is 0
+            lower4Bits == RAM_MODE ? bankModeToUse = RAM_MODE : bankModeToUse = ROM_MODE;
+        }
         return;
     }
 
@@ -354,6 +392,10 @@ void Memory::LoadRom(char const* filename) {
         case 0x04: eRam.resize(0x20000); break;
         case 0x05: eRam.resize(0x10000); break;
         default: eRam.resize(0); break;
+    }
+    //this byte tells us the cartridge type which we are basically using to see what the MBC is
+    if (rom[0x147] >= 0x0F && rom[0x147] <= 0x13) {
+        MBC = 3;
     }
 }
 
