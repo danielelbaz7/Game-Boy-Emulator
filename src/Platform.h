@@ -16,7 +16,7 @@
 //the platform class holds the actual entire computer's logic, pulling from cpu, ppu, etc.
 class Platform {
 public:
-    Platform(const char* filename);
+    Platform(const char* filename, const char* savefile = nullptr);
     void Run();
 
     void DrawFramebuffer(uint32_t *frameBuffer, uint16_t colCount);
@@ -39,8 +39,9 @@ private:
         {"right", KeyStatus::Released}, {"a", KeyStatus::Released}, {"b", KeyStatus::Released},
         {"select", KeyStatus::Released}, {"start", KeyStatus::Released}};
 
-    
+
     void SetButtonStatusInMemory(std::string key, KeyStatus status);
+    const char* savefile;
 };
 
 

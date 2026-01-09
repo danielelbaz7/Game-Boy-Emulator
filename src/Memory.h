@@ -23,8 +23,8 @@ class Memory {
 public:
     void LoadRom(char const* filename);
     void InitializeMemory();
-    void DumpToSaveFile();
-    void LoadFromSaveFile();
+    void DumpToSaveFile(const char* savefile = nullptr);
+    void LoadFromSaveFile(const char* savefile = nullptr);
 
 
     void WriteScanline(uint8_t value, MemoryAccessor caller);

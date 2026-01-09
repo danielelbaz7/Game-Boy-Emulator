@@ -7,8 +7,9 @@
 #include <iostream>
 #include <thread>
 
-Platform::Platform(const char* filename)
-    : window(SDL_CreateWindow("Game Boy", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+Platform::Platform(const char* filename, const char* savefile)
+    : savefile(savefile),
+    window(SDL_CreateWindow("Game Boy", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         160 * 3, 144 * 3, SDL_WINDOW_SHOWN)),
     renderer(SDL_CreateRenderer( window, -1, SDL_RENDERER_ACCELERATED )),
     texture(SDL_CreateTexture( renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 160, 144)) {
@@ -16,6 +17,12 @@ Platform::Platform(const char* filename)
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     mem.InitializeMemory();
     mem.LoadRom(filename);
+
+    //load from the default save file if none exists, and if it does then load from the specified one
+    //LoadFromSaveFile will check if that default file exists
+    if(!savefile) { mem.LoadFromSaveFile(); }
+    else { mem.LoadFromSaveFile(savefile); }
+
     mem.SetButtonStatus(buttonStatus);
 }
 
@@ -146,7 +153,10 @@ void Platform::Run() {
                 std::chrono::steady_clock::now()
             );
     }
-    mem.DumpToSaveFile();
+
+    //there should ALWAYS be a save file to dump to but in the case that there isn't
+    if(!savefile) { mem.DumpToSaveFile(); }
+    else { mem.DumpToSaveFile(savefile); }
 }
 
 void Platform::DrawFramebuffer(uint32_t *frameBuffer, uint16_t colCount) {

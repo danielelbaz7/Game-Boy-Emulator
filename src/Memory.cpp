@@ -401,20 +401,23 @@ void Memory::LoadRom(char const* filename) {
     if (rom[0x147] >= 0x0F && rom[0x147] <= 0x13) {
         MBC = 3;
     }
-    LoadFromSaveFile();
 }
 
-void Memory::DumpToSaveFile() {
+void Memory::DumpToSaveFile(const char* savefile) {
     //the game name is stored from 0x134 to UP TO 0x143
     std::string gameFilename{};
-    for (int i = 0; i < 16; i++) {
-        uint8_t *character = &rom[0x134 + i];
-        if (*character == 0x00) {
-            break;
+    if(savefile) {
+        gameFilename = savefile;
+    } else {
+        for (int i = 0; i < 16; i++) {
+            uint8_t *character = &rom[0x134 + i];
+            if (*character == 0x00) {
+                break;
+            }
+            gameFilename += static_cast<char>(*character);
         }
-        gameFilename += static_cast<char>(*character);
+        gameFilename += ".sav";
     }
-    gameFilename += ".sav";
     //this will create the file if it doesn't exist
     std::ofstream file(gameFilename, std::ios::binary);
     if (file.is_open()) {
@@ -422,24 +425,37 @@ void Memory::DumpToSaveFile() {
     }
 }
 
-void Memory::LoadFromSaveFile() {
-    //the game name is stored from 0x134 to UP TO 0x143
+
+//pass in a constant character array which stores the string of the filename of the save file
+//default to nullptr if you pass nothing, and we generate it ourselves. same logic in dumpTo
+void Memory::LoadFromSaveFile(const char* savefile) {
     std::string gameFilename{};
-    for (int i = 0; i < 16; i++) {
-        uint8_t *character = &rom[0x134 + i];
-        if (*character == 0x00) {
-            break;
+    //the game name is stored from 0x134 to UP TO 0x143
+    if(savefile) {
+        gameFilename = savefile;
+    } else {
+        for (int i = 0; i < 16; i++) {
+            uint8_t *character = &rom[0x134 + i];
+            if (*character == 0x00) {
+                break;
+            }
+            gameFilename += static_cast<char>(*character);
         }
-        gameFilename += static_cast<char>(*character);
+        gameFilename += ".sav";
     }
-    gameFilename += ".sav";
-    //this will create the file if it doesn't exist
     std::ifstream file(gameFilename, std::ios::binary | std::ios::ate);
+
+    //if a file to load from doesn't exist, don't load anything
+    if(!file.good()) {
+        return;
+    }
+
     if (file.is_open()) {
         std::streampos filesize = file.tellg();
         file.seekg(0, std::ios::beg);
         file.read(reinterpret_cast<char*>(eRam.data()), filesize);
     }
+
 }
 
 
