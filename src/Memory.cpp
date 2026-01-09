@@ -243,6 +243,7 @@ void Memory::Write(uint16_t address, uint8_t byteToWrite, MemoryAccessor caller)
     // handles rom bank switching & validation
     if (address <= 0x3FFF) {
         if (MBC == 1) {
+            //we need only utilize the lower 5 bits for setting the rom window
             uint8_t lower5Bits = (byteToWrite & 0x1F);
             //if we are selecting bank 0, we actually select bank 1
             if (lower5Bits == 0x00) {
@@ -400,7 +401,47 @@ void Memory::LoadRom(char const* filename) {
     if (rom[0x147] >= 0x0F && rom[0x147] <= 0x13) {
         MBC = 3;
     }
+    LoadFromSaveFile();
 }
+
+void Memory::DumpToSaveFile() {
+    //the game name is stored from 0x134 to UP TO 0x143
+    std::string gameFilename{};
+    for (int i = 0; i < 16; i++) {
+        uint8_t *character = &rom[0x134 + i];
+        if (*character == 0x00) {
+            break;
+        }
+        gameFilename += static_cast<char>(*character);
+    }
+    gameFilename += ".sav";
+    //this will create the file if it doesn't exist
+    std::ofstream file(gameFilename, std::ios::binary);
+    if (file.is_open()) {
+        file.write(reinterpret_cast<char*>(eRam.data()), eRam.size());
+    }
+}
+
+void Memory::LoadFromSaveFile() {
+    //the game name is stored from 0x134 to UP TO 0x143
+    std::string gameFilename{};
+    for (int i = 0; i < 16; i++) {
+        uint8_t *character = &rom[0x134 + i];
+        if (*character == 0x00) {
+            break;
+        }
+        gameFilename += static_cast<char>(*character);
+    }
+    gameFilename += ".sav";
+    //this will create the file if it doesn't exist
+    std::ifstream file(gameFilename, std::ios::binary | std::ios::ate);
+    if (file.is_open()) {
+        std::streampos filesize = file.tellg();
+        file.seekg(0, std::ios::beg);
+        file.read(reinterpret_cast<char*>(eRam.data()), filesize);
+    }
+}
+
 
 //since we are not using the boot rom, we use this to set all register values to what they are supposed to be
 void Memory::InitializeMemory() {

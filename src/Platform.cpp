@@ -145,10 +145,9 @@ void Platform::Run() {
         frameStartTime = std::chrono::time_point_cast<std::chrono::microseconds>(
                 std::chrono::steady_clock::now()
             );
-
     }
+    mem.DumpToSaveFile();
 }
-
 
 void Platform::DrawFramebuffer(uint32_t *frameBuffer, uint16_t colCount) {
     //pass in the texture, nullptr means we want to update the entire screen, the framebuffer to place on the texture

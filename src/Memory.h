@@ -22,6 +22,9 @@ class Memory {
 public:
     void LoadRom(char const* filename);
     void InitializeMemory();
+    void DumpToSaveFile();
+    void LoadFromSaveFile();
+
 
     void WriteScanline(uint8_t value, MemoryAccessor caller);
     std::array<uint8_t, 16> ReadTile(uint8_t tileID, MemoryAccessor caller = MemoryAccessor::PPU);
