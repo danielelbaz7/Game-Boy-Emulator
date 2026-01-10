@@ -4,17 +4,17 @@
 #include <thread>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
-//brew install sdl2_ttf 
-// for macOS^^
 
 
-struct arguments {
+struct launcherStatus {
     std::string romPath;
     std::string savePath;
     bool pressStart = false;
 };
 
+
 class Launcher {
+
 
     bool IsClickInRect(int x, int y, SDL_Rect& rect);
 
@@ -28,7 +28,7 @@ public:
 
     Launcher();
     ~Launcher();
-    arguments Run();
+    launcherStatus Run();
 
 
 
@@ -37,7 +37,7 @@ private:
     SDL_Renderer* renderer = nullptr;
     TTF_Font* font = nullptr;
     TTF_Font* titleFont = nullptr;
-    arguments romAndSave;
+    launcherStatus currentLauncherStatus;
 
 
 };

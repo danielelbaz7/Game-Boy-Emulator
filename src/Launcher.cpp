@@ -3,6 +3,7 @@
 //
 
 #include "Launcher.h"
+#include "portable-file-dialogs.h"
 
 #ifdef _WIN32
     #include <windows.h>
@@ -119,6 +120,7 @@ void Launcher::DrawRoundedRect(SDL_Rect rect, SDL_Color color, int radius) {
     }
 } // claude function
 
+//this just takes the relative name of the file out of the full path so it can be displayed
 std::string Launcher::GetFilename(const std::string& path) {
     if (path.empty()) return "";
     size_t lastSlash = path.find_last_of("\\/");
@@ -129,58 +131,25 @@ std::string Launcher::GetFilename(const std::string& path) {
 } // claude function
 
 std::string Launcher::OpenFileDialog(const char* filter) {
-#ifdef _WIN32
-    // Windows
-    OPENFILENAMEA ofn;
-    char szFile[260]{};
-    
-    ZeroMemory(&ofn, sizeof(ofn));
-    ofn.lStructSize = sizeof(ofn);
-    ofn.hwndOwner = NULL;
-    ofn.lpstrFile = szFile;
-    ofn.nMaxFile = sizeof(szFile);
-    ofn.lpstrFilter = filter;
-    ofn.nFilterIndex = 1;
-    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-    
-    if (GetOpenFileNameA(&ofn)) {
-        return std::string(szFile);
-    }
-    return "";
-    
-#elif __APPLE__
-    // macOS
-    @autoreleasepool {
-        NSOpenPanel* panel = [NSOpenPanel openPanel];
-        [panel setCanChooseFiles:YES];
-        [panel setCanChooseDirectories:NO];
-        [panel setAllowsMultipleSelection:NO];
-        
-        // Handle the filter (e.g., "gb", "gbc")
-        if (filter != nullptr && strlen(filter) > 0) {
-            NSString* filterStr = [NSString stringWithUTF8String:filter];
-            // In modern macOS (11.0+), we use allowedContentTypes. 
-            // For older compatibility, we use allowedFileTypes.
-            NSArray* fileTypes = [NSArray arrayWithObject:filterStr];
-            [panel setAllowedFileTypes:fileTypes];
-        }
+    // Parse the filter string to extract extensions
+    // For "Game Boy ROMs\0*.gb;" we want just "gb"
 
-        // Bringing the panel to the front is often necessary in SDL/CLI apps
-        [panel setLevel:NSFloatingWindowLevel];
-        
-        if ([panel runModal] == NSModalResponseOK) {
-            // Get the URL and convert to a standard string
-            NSURL* url = [[panel URLs] objectAtIndex:0];
-            return std::string([[url path] UTF8String]);
-        }
-    }
-    return "";
-    
+    auto selection = pfd::open_file(
+        "Select a file",           // Dialog title
+        ".",                       // Starting directory (current dir)
+        { "Game Boy ROMs", "*.gb *.gbc",
+          "Save Files", "*.sav",
+          "All Files", "*" },
+        pfd::opt::none             // Options (can be multiselect, etc.)
+    ).result();
 
-#endif
+    if (!selection.empty()) {
+        return selection[0];  // Return first selected file
+    }
+    return "";  // User cancelled
 }
 
-arguments Launcher::Run() {
+launcherStatus Launcher::Run() {
     bool quit = false;
     SDL_Event e;
     int mouseX = 0;
@@ -217,16 +186,16 @@ arguments Launcher::Run() {
                     if (IsClickInRect(mouseX, mouseY, romButton)) {
                         // prompt user to choose rom | update struct
                         std::string path = OpenFileDialog("Game Boy ROMs\0*.gb;");
-                        romAndSave.romPath = path;
+                        currentLauncherStatus.romPath = path;
                     }
                     else if (IsClickInRect(mouseX, mouseY, saveButton)) {
                         // prompt user to choose sav | update struct
                         std::string path = OpenFileDialog("Save Files\0*.sav\0All Files\0*.*\0");
-                        romAndSave.savePath = path;
+                        currentLauncherStatus.savePath = path;
                     }
                     else if (IsClickInRect(mouseX, mouseY, startButton)) {
                         // exit loop
-                        romAndSave.pressStart= true;
+                        currentLauncherStatus.pressStart= true;
                         quit = true;
                     }
                 }
@@ -252,13 +221,13 @@ arguments Launcher::Run() {
         SDL_Color startHoverColor = {100, 220, 140, 255};
 
         // Title
-        RenderText("GameBoy Launcher", 240, 30, titleColor, true, true);
+        RenderText("Game Boy Launcher", 240, 30, titleColor, true, true);
 
         // ROM section
         RenderText("Choose ROM", 75, 115, subtleWhite);
         DrawRoundedRect(romButton, romButtonHovered ? buttonHoverColor : buttonColor, 8);
-        if (!romAndSave.romPath.empty()) {
-            std::string filename = GetFilename(romAndSave.romPath);
+        if (!currentLauncherStatus.romPath.empty()) {
+            std::string filename = GetFilename(currentLauncherStatus.romPath);
             RenderText(filename.c_str(), 240, 152, whiteColor, true, false, &romButton);
         } else {
             RenderText("Click to select ROM", 240, 152, whiteColor, true);
@@ -267,8 +236,8 @@ arguments Launcher::Run() {
         // Save section
         RenderText("Choose SAV (Optional)", 75, 205, subtleWhite);
         DrawRoundedRect(saveButton, saveButtonHovered ? buttonHoverColor : buttonColor, 8);
-        if (!romAndSave.savePath.empty()) {
-            std::string filename = GetFilename(romAndSave.savePath);
+        if (!currentLauncherStatus.savePath.empty()) {
+            std::string filename = GetFilename(currentLauncherStatus.savePath);
             RenderText(filename.c_str(), 240, 242, whiteColor, true, false, &saveButton);
         } else {
             RenderText("Click to select SAV", 240, 242, whiteColor, true);
@@ -281,6 +250,6 @@ arguments Launcher::Run() {
         SDL_RenderPresent(renderer);
     }
 
-    return romAndSave;
+    return currentLauncherStatus;
 }
 

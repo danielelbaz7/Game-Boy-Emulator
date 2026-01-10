@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
     if (argc < 2) {
         // std::cerr << "You have the wrong number of arguments!";
         // // change to call launcher
-        arguments runInfo;
+        launcherStatus runInfo;
         {
             Launcher launcher;
             runInfo = launcher.Run();
