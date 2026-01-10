@@ -174,20 +174,28 @@ launcherStatus Launcher::Run() {
     SDL_Rect saveButton = {65, 230, 350, 45};
     SDL_Rect startButton = {125, 330, 230, 55};
 
+    //make a vector for recent roms which will store the 10 most recent roms
     std::vector<std::string> recentROMs;
 
+    //open an if stream of the file that stores the recent roms
     std::ifstream recentROMsFile("recent_roms.txt");
     std::string line;
+    //write every line (each rom) to the vector
     while (std::getline(recentROMsFile, line)) {
         recentROMs.push_back(line);
     }
 
+    //if there is a most recent rom, set the launcher's current rom path
+    currentLauncherStatus.romPath = !recentROMs.empty() ? recentROMs.back() : "";
+
+    //same logic w saves
     std::vector<std::string> recentSaves;
 
-    std::ifstream recentSavesFile("recent_savs.txt");
+    std::ifstream recentSavesFile("recent_saves.txt");
     while (std::getline(recentSavesFile, line)) {
         recentSaves.push_back(line);
     }
+    currentLauncherStatus.savePath = !recentSaves.empty() ? recentSaves.back() : "";
 
     while(!quit) {
         // Handle events
@@ -209,17 +217,43 @@ launcherStatus Launcher::Run() {
                     int mouseX = e.button.x;
                     int mouseY = e.button.y;
 
+                    //if the recent roms is full (10 roms, don't do GEQ bc if it went over 10 user modified, let them
+                    //modify) then erase the beginning one, and push either way the newest selected one
                     if (IsClickInRect(mouseX, mouseY, romButton)) {
                         // prompt user to choose rom | update struct
                         std::string path = OpenFileDialog("Game Boy ROMs");
+                        if (recentROMs.size() == 10) {
+                            recentROMs.erase(recentROMs.begin());
+                        }
+                        recentROMs.push_back(path);
                         currentLauncherStatus.romPath = path;
+                        //trunc mode explicitly clears the file
                     }
                     else if (IsClickInRect(mouseX, mouseY, saveButton)) {
                         // prompt user to choose sav | update struct
                         std::string path = OpenFileDialog("Save Files");
+                        //same as above but for saves, not roms
+                        if (recentSaves.size() == 10) {
+                            recentSaves.erase(recentSaves.begin());
+                        }
+                        recentSaves.push_back(path);
                         currentLauncherStatus.savePath = path;
                     }
                     else if (IsClickInRect(mouseX, mouseY, startButton)) {
+                        //push the roms list to the roms file after wiping the file
+                        std::ofstream outROMs("recent_roms.txt", std::ios::trunc);
+                        for (std::string save : recentROMs) {
+                            outROMs << save << "\n";
+                        }
+                        outROMs.close();
+
+                        //do the same with saves
+                        std::ofstream outSaves("recent_saves.txt", std::ios::trunc);
+                        for (std::string save : recentSaves) {
+                            outSaves << save << "\n";
+                        }
+                        outSaves.close();
+
                         // exit loop
                         currentLauncherStatus.pressStart= true;
                         quit = true;
@@ -279,4 +313,3 @@ launcherStatus Launcher::Run() {
 
     return currentLauncherStatus;
 }
-
