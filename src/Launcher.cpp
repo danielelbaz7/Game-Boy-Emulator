@@ -67,18 +67,18 @@ void Launcher::RenderText(const char* text, int x, int y, SDL_Color color, bool 
         if (clipRect) {
             SDL_RenderSetClipRect(renderer, clipRect);
         }
-        
+
         int finalX = x;
         if (centered) {
             finalX = x - (surface->w / 2);
         }
         SDL_Rect destRect = {finalX, y, surface->w, surface->h};
         SDL_RenderCopy(renderer, texture, NULL, &destRect);
-        
+
         if (clipRect) {
             SDL_RenderSetClipRect(renderer, NULL);
         }
-        
+
         SDL_DestroyTexture(texture);
     }
     SDL_FreeSurface(surface);
@@ -216,6 +216,7 @@ launcherStatus Launcher::Run() {
             int g = 20 + (y * 15 / (144 * 3));
             int b = 40 + (y * 30 / (144 * 3));
             SDL_SetRenderDrawColor(renderer, r, g, b, 255);
+            SDL_RenderClear(renderer); // fixed visual artifacting bug, clears the window's backbuffer before rerender
             SDL_RenderDrawLine(renderer, 0, y, 160 * 3, y);
         }
 
