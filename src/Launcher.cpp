@@ -5,21 +5,12 @@
 #include "Launcher.h"
 #include "portable-file-dialogs.h"
 
-#ifdef _WIN32
-    #include <windows.h>
-    #include <commdlg.h>
-#elif __APPLE__
-    // macOS headers for file dialog
-    #include <AppKit/AppKit.h>
-#endif
-
-
 Launcher::Launcher() {
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
 
     //create window & renderer (same as platform mostly)
-    window = SDL_CreateWindow("GameBoy Emulator - Launcher",
+    window = SDL_CreateWindow("Game Boy Emulator - Launcher",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         160 * 3, 144 * 3, SDL_WINDOW_SHOWN);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
@@ -131,24 +122,41 @@ std::string Launcher::GetFilename(const std::string& path) {
 } // claude function
 
 std::string Launcher::OpenFileDialog(const char* filter) {
-    // Parse the filter string to extract extensions
-    // For "Game Boy ROMs\0*.gb;" we want just "gb"
+    // Determine what we're selecting based on the filter
+    if (strcmp(filter, "Game Boy ROMs") == 0) {
+        // ROM selection
+        auto selection = pfd::open_file(
+            "Select Game Boy ROM", // title of selection window
+            ".",
+            { "Game Boy ROMs", "*.gb",
+            }, //only allow .gb files
+            pfd::opt::none
+        ).result();
 
+        return selection.empty() ? "" : selection[0];
+    }
+    else if (strcmp(filter, "Save Files") == 0) {
+        // Save file selection
+        auto selection = pfd::open_file(
+            "Select Save File",  // Specific title
+            ".",
+            { "Save Files", "*.sav"
+            },  // Only relevant filters
+            pfd::opt::none
+        ).result();
+
+        return selection.empty() ? "" : selection[0];
+    }
+
+    // Fallback (shouldn't happen)
     auto selection = pfd::open_file(
-        "Select a file",           // Dialog title
-        ".",                       // Starting directory (current dir)
-        { "Game Boy ROMs", "*.gb *.gbc",
-          "Save Files", "*.sav",
-          "All Files", "*" },
-        pfd::opt::none             // Options (can be multiselect, etc.)
+        "Select a file",
+        ".",
+        { "All Files", "*" }
     ).result();
 
-    if (!selection.empty()) {
-        return selection[0];  // Return first selected file
-    }
-    return "";  // User cancelled
+    return selection.empty() ? "" : selection[0];
 }
-
 launcherStatus Launcher::Run() {
     bool quit = false;
     SDL_Event e;
@@ -185,12 +193,12 @@ launcherStatus Launcher::Run() {
 
                     if (IsClickInRect(mouseX, mouseY, romButton)) {
                         // prompt user to choose rom | update struct
-                        std::string path = OpenFileDialog("Game Boy ROMs\0*.gb;");
+                        std::string path = OpenFileDialog("Game Boy ROMs");
                         currentLauncherStatus.romPath = path;
                     }
                     else if (IsClickInRect(mouseX, mouseY, saveButton)) {
                         // prompt user to choose sav | update struct
-                        std::string path = OpenFileDialog("Save Files\0*.sav\0All Files\0*.*\0");
+                        std::string path = OpenFileDialog("Save Files");
                         currentLauncherStatus.savePath = path;
                     }
                     else if (IsClickInRect(mouseX, mouseY, startButton)) {
