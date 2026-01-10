@@ -255,6 +255,10 @@ void Memory::Write(uint16_t address, uint8_t byteToWrite, MemoryAccessor caller)
             currentRomWindow = (currentRomWindow & 0x60u) | lower5Bits;
         } else {
             //this only happens if we are in MBC 3, then we just write the whole 7 bits to be the rom window
+            //0 still selects bank 1
+            if (byteToWrite == 0x00) {
+                byteToWrite = 0x01;
+            }
             currentRomWindow = (byteToWrite & 0x7F);
         }
         return;
