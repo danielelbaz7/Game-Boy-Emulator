@@ -3,7 +3,7 @@
 //
 
 #include "Launcher.h"
-
+#include <algorithm>
 #include <fstream>
 
 #include "portable-file-dialogs.h"
@@ -12,17 +12,11 @@ Launcher::Launcher() {
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
 
-    // sharper text hint
-    //SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
-
     //create window & renderer (same as platform mostly)
     window = SDL_CreateWindow("Game Boy Emulator - Launcher",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         160 * 3*resScale, 144 * 3*resScale, SDL_WINDOW_SHOWN);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-
-    // set higher resolution (2x)
-    //SDL_RenderSetLogicalSize(renderer, 160* 3 * resScale, 144*3 * resScale);
 
     // Load fonts | use pixelated font for 'authentic' look (and bc font sharpness sucks)
 #ifdef _WIN32
@@ -246,10 +240,16 @@ launcherStatus Launcher::Run() {
 
                     //if the recent roms is full (10 roms, don't do GEQ bc if it went over 10 user modified, let them
                     //modify) then erase the beginning one, and push either way the newest selected one
+                    // if recent rom contains select rom, push selected rom to top, remove 'lower' duplicate
                     if (IsClickInRect(mouseX, mouseY, romButton)) {
                         // prompt user to choose rom | update struct
                         std::string path = OpenFileDialog("Game Boy ROMs");
-                        if (recentROMs.size() == 10) {
+                        // check for existing duplicate
+                        auto dupe = std::find(recentROMs.begin(), recentROMs.end(), path);
+                        if (dupe != recentROMs.end()) {
+                            recentROMs.erase(dupe); // kill old saved rom
+                        }
+                        else if (recentROMs.size() == 10) {
                             recentROMs.erase(recentROMs.begin());
                         }
                         recentROMs.push_back(path);
@@ -260,7 +260,12 @@ launcherStatus Launcher::Run() {
                         // prompt user to choose sav | update struct
                         std::string path = OpenFileDialog("Save Files");
                         //same as above but for saves, not roms
-                        if (recentSaves.size() == 10) {
+                        // check for existing duplicate
+                        auto dupe = std::find(recentSaves.begin(), recentSaves.end(), path);
+                        if (dupe != recentSaves.end()) {
+                            recentSaves.erase(dupe); // kill old saved sav
+                        }
+                        else if (recentSaves.size() == 10) {
                             recentSaves.erase(recentSaves.begin());
                         }
                         recentSaves.push_back(path);
@@ -288,8 +293,6 @@ launcherStatus Launcher::Run() {
                 }
             }
         }
-
-        //SDL_RenderClear(renderer); // fixed visual artifacting bug, clears the window's backbuffer before rerender
     
         // COLOR SCHEME
         SDL_Color whiteColor = {255, 255, 255, 255};
