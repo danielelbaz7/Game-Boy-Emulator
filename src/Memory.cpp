@@ -8,6 +8,8 @@
 #include <iostream>
 #include <array>
 // #include <cstdint>
+#include <set>
+
 #include "PPU.h"
 
 bool Memory::isLcdOn() {
@@ -405,9 +407,15 @@ void Memory::LoadRom(char const* filename) {
         case 0x05: eRam.resize(0x10000); break;
         default: eRam.resize(0); break;
     }
+    const uint8_t cartridgeType = rom[0x147];
     //this byte tells us the cartridge type which we are basically using to see what the MBC is
-    if (rom[0x147] >= 0x0F && rom[0x147] <= 0x13) {
+    if (cartridgeType >= 0x0F && cartridgeType <= 0x13) {
         MBC = 3;
+    }
+    std::set<uint8_t> usesSaveFiles = { 0x03, 0x06, 0x09, 0x0D, 0x0F, 0x10, 0x13, 0x1B, 0x1E };
+    //the cartridge type also says if there are saves which will tell us whether we should even save or no
+    if (!usesSaveFiles.contains(cartridgeType)) {
+        useSaves = false;
     }
 }
 

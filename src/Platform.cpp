@@ -20,8 +20,10 @@ Platform::Platform(const char* filename, const char* savefile)
 
     //load from the default save file if none exists, and if it does then load from the specified one
     //LoadFromSaveFile will check if that default file exists
-    if(!savefile || savefile == "") { mem.LoadFromSaveFile(); }
-    else { mem.LoadFromSaveFile(savefile); }
+    if (mem.getUseSaves()) {
+        if(!savefile || savefile == "") { mem.LoadFromSaveFile(); }
+        else { mem.LoadFromSaveFile(savefile); }
+    }
 
     mem.SetButtonStatus(buttonStatus);
 }
@@ -158,8 +160,10 @@ void Platform::Run() {
     std::cout << totalTime << frameCount << std::endl;
 
     //there should ALWAYS be a save file to dump to but in the case that there isn't, dump to default
-    if(!savefile) { mem.DumpToSaveFile(); }
-    else { mem.DumpToSaveFile(savefile); }
+    if (mem.getUseSaves()) {
+        if(!savefile) { mem.DumpToSaveFile(); }
+        else { mem.DumpToSaveFile(savefile); }
+    }
 }
 
 void Platform::DrawFramebuffer(uint32_t *frameBuffer, uint16_t colCount) {

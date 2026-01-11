@@ -39,6 +39,9 @@ public:
     void SetJoypadInterrupt();
     void SetButtonStatus(std::unordered_map<std::string, KeyStatus> &buttonStatusRef) { buttonStatus = &buttonStatusRef; };
 
+    bool getUseSaves() {
+        return useSaves;
+    }
 
 private:
     // set to default mode (VBlank)
@@ -103,6 +106,7 @@ private:
 
     uint8_t MBC{1};
     bool RTCRegisterMapped = false;
+    bool useSaves = true;
 
 };
 
